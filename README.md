@@ -3,16 +3,16 @@
 
 ## Table of Contents
 
-1. [Introduction](Open Geodata API - Complete User Guide.md#introduction)
-2. [Installation](Open Geodata API - Complete User Guide.md#installation)
-3. [Quick Start](Open Geodata API - Complete User Guide.md#quick-start)
-4. [Core Concepts](Open Geodata API - Complete User Guide.md#core-concepts)
-5. [API Reference](Open Geodata API - Complete User Guide.md#api-reference)
-6. [Usage Examples](Open Geodata API - Complete User Guide.md#usage-examples)
-7. [Best Practices](Open Geodata API - Complete User Guide.md#best-practices)
-8. [Troubleshooting](Open Geodata API - Complete User Guide.md#troubleshooting)
-9. [Advanced Usage](Open Geodata API - Complete User Guide.md#advanced-usage)
-10. [FAQ](Open Geodata API - Complete User Guide.md#faq)
+1. [Introduction](README.md#introduction)
+2. [Installation](README.md#installation)
+3. [Quick Start](README.md#quick-start)
+4. [Core Concepts](README.md#core-concepts)
+5. [API Reference](README.md#api-reference)
+6. [Usage Examples](README.md#usage-examples)
+7. [Best Practices](README.md#best-practices)
+8. [Troubleshooting](README.md#troubleshooting)
+9. [Advanced Usage](README.md#advanced-usage)
+10. [FAQ](README.md#faq)
 
 ## Introduction
 
@@ -1120,7 +1120,7 @@ This completes the comprehensive user guide for Open Geodata API. The package pr
 
 [^8]: https://packaging.python.org
 
-[^9]: http://r-project.ro/conference2018/presentations/Tutorial_Spatial_Analysis_in_R_with_Open_Geodata_-_uRos2018.pdf
+[^9]: [http://r-project.ro/conference2018/presentations/Tutorial_Spatial_Analysis_in_R_with_Open_Geodata_-_uRos2018.pdf](https://github.com/Mirjan-Ali-Sha/open-geodata-api/blob/main/Open%20Geodata%20API%20-%20Complete%20User%20Guide.pdf)
 
 [^10]: https://geodata.readthedocs.io
 

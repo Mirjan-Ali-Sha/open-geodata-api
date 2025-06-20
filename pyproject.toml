@@ -79,12 +79,12 @@ dev = [
 ]
 
 [project.urls]
-"License" = "https://github.com/yourusername/open-geodata-api/blob/main/LICENSE"
-"Third-Party Notices" = "https://github.com/yourusername/open-geodata-api/blob/main/THIRD_PARTY_NOTICES.md"
-Homepage = "https://github.com/yourusername/open-geodata-api"
+"License" = "https://github.com/Mirjan-Ali-Sha/open-geodata-api/blob/main/LICENSE"
+"Third-Party Notices" = "https://github.com/Mirjan-Ali-Sha/open-geodata-api/blob/main/THIRD_PARTY_NOTICES.md"
+Homepage = "https://github.com/Mirjan-Ali-Sha/open-geodata-api"
 Documentation = "https://open-geodata-api.readthedocs.io"
-Repository = "https://github.com/yourusername/open-geodata-api"
-"Bug Reports" = "https://github.com/yourusername/open-geodata-api/issues"
+Repository = "https://github.com/Mirjan-Ali-Sha/open-geodata-api"
+"Bug Reports" = "https://github.com/Mirjan-Ali-Sha/open-geodata-api/issues"
 
 [tool.hatch.version]
 path = "open_geodata_api/__init__.py"
