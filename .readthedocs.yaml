@@ -1,0 +1,50 @@
+# .readthedocs.yaml
+# Advanced configuration for open-geodata-api documentation
+
+version: 2
+
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.11"
+  jobs:
+    post_create_environment:
+      # Install latest pip
+      - pip install --upgrade pip setuptools wheel
+    post_install:
+      # Install the package in development mode
+      - pip install -e .
+
+sphinx:
+  configuration: docs/conf.py
+  builder: html
+  fail_on_warning: false
+
+formats:
+  - pdf
+  - epub
+  - htmlzip
+
+python:
+  install:
+    - requirements: docs/requirements.txt
+    - method: pip
+      path: .
+      extra_requirements:
+        - spatial
+        - complete
+
+# Environment variables
+env:
+  READTHEDOCS: True
+
+# Search configuration
+search:
+  ranking:
+    'docs/api/*': -1
+    'docs/examples/*': 2
+    'docs/user-guide/*': 1
+
+# Redirects for URL changes
+redirects:
+  'old-url': 'new-url'
