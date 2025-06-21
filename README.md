@@ -32,6 +32,17 @@
 ✅ **Clean API**: Intuitive, Pythonic interface
 ✅ **Production Ready**: Robust error handling and comprehensive testing
 
+### Key Features of Extra Utils Functions:
+✅ **Intelligent Input Detection** - Automatically handles URLs, dicts, items, seasonal data
+✅ **Automatic URL Management** - Re-signs expired URLs with warnings
+✅ **Flexible Destinations** - File, directory, or auto-naming support
+✅ **Progress Tracking** - Visual progress bars for downloads
+✅ **Organized Structure** - Creates logical folder hierarchies
+✅ **Error Handling** - Robust error handling with partial download support
+✅ **Provider Awareness** - Handles PC signing and ES validation
+✅ **Batch Processing** - Efficient handling of multiple files
+✅ **Summary Reports** - Detailed download statistics
+
 ### Supported APIs
 
 | API | Provider | Authentication | URL Handling |
