@@ -87,6 +87,12 @@ Documentation = "https://open-geodata-api.readthedocs.io"
 Repository = "https://github.com/Mirjan-Ali-Sha/open-geodata-api"
 "Bug Reports" = "https://github.com/Mirjan-Ali-Sha/open-geodata-api/issues"
 
+[tool.hatch.build]
+# these globs go into both sdist and wheel
+include = [
+  "icon.png",
+]
+
 [tool.hatch.version]
 path = "open_geodata_api/__init__.py"
 
