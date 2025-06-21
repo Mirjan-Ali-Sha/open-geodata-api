@@ -54,7 +54,7 @@ For contributors:
 
 .. code-block:: bash
 
-   git clone https://github.com/yourusername/open-geodata-api.git
+   git clone https://github.com/Mirjan-Ali-Sha/open-geodata-api.git
    cd open-geodata-api
    pip install -e .[dev]
 

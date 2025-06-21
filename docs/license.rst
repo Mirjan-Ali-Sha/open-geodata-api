@@ -47,4 +47,4 @@ By using this software, you agree to:
 4. Use third-party services at your own risk
 5. Not hold the authors liable for third-party issues
 
-For complete details, see the `LICENSE <https://github.com/yourusername/open-geodata-api/blob/main/LICENSE>`_ file.
+For complete details, see the `LICENSE <https://github.com/Mirjan-Ali-Sha/open-geodata-api/blob/main/LICENSE>`_ file.
