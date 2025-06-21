@@ -1,3 +1,4 @@
+[Open Geodata API Icon](icon.png)
 
 # Open Geodata API - Complete User Guide
 
