@@ -90,7 +90,8 @@ Repository = "https://github.com/Mirjan-Ali-Sha/open-geodata-api"
 [tool.hatch.build]
 # these globs go into both sdist and wheel
 include = [
-  "icon.png",
+  "icon.png",         # your icon
+  "LICENSE",          # license file
 ]
 
 [tool.hatch.version]
