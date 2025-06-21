@@ -15,7 +15,8 @@
 7. [Best Practices](README.md#best-practices)
 8. [Troubleshooting](README.md#troubleshooting)
 9. [Advanced Usage](README.md#advanced-usage)
-10. [FAQ](README.md#faq)
+10. [Utility Functions](README.md#utils-functions)
+11. [FAQ](README.md#faq)
 
 ## Introduction
 
@@ -966,7 +967,363 @@ def add_caching_headers(url):
 cached_urls = process_urls_custom(items, add_caching_headers)
 print(f"Cached URLs: {cached_urls}")
 ```
+## Utils Functions Usage
 
+### Utils Functions - Usage Examples
+
+```python
+import open_geodata_api as ogapi
+from open_geodata_api.utils import (
+    filter_by_cloud_cover,
+    download_datasets,
+    download_url,
+    download_from_json,
+    download_seasonal,
+    download_single_file,
+    download_url_dict,
+    download_items,
+    download_seasonal_data,
+    create_download_summary,
+    is_url_expired,
+    is_signed_url,
+    re_sign_url_if_needed
+)
+
+# Setup clients
+pc = ogapi.planetary_computer(auto_sign=True)
+es = ogapi.earth_search()
+```
+
+#### Example 1: Complete Workflow - Search and Filter by Cloud Cover
+```python
+print("🔍 Searching for Sentinel-2 data...")
+results = pc.search(
+    collections=["sentinel-2-l2a"],
+    bbox=[-122.5, 47.5, -122.0, 48.0],  # Seattle area
+    datetime="2024-06-01/2024-08-31",
+    limit=20
+)
+
+items = results.get_all_items()
+print(f"Found {len(items)} items")
+
+# Filter by cloud cover using utils
+clear_items = filter_by_cloud_cover(items, max_cloud_cover=15)
+print(f"After filtering: {len(clear_items)} clear items (<15% clouds)")
+```
+
+#### Example 2: Download Single Asset from Search Results
+```python
+print("\n📥 Downloading single asset...")
+first_item = clear_items[^0]
+first_item.print_assets_info()
+
+# Get a single band URL and download
+red_url = first_item.get_asset_url('B04')  # Red band, auto-signed
+downloaded_file = download_single_file(
+    red_url, 
+    destination="./data/red_band.tif",
+    provider="planetary_computer"
+)
+print(f"Downloaded: {downloaded_file}")
+```
+
+#### Example 3: Download RGB Bands from Multiple Items
+```python
+print("\n🎨 Downloading RGB bands from multiple items...")
+rgb_downloads = download_items(
+    clear_items[:3],  # First 3 clear items
+    base_destination="./rgb_data/",
+    asset_keys=['B04', 'B03', 'B02'],  # Red, Green, Blue
+    create_product_folders=True
+)
+
+print(f"Downloaded RGB data for {len(rgb_downloads)} items")
+```
+
+#### Example 4: Multi-Provider Data Collection and Download
+```python
+print("\n🌍 Comparing data from multiple providers...")
+
+# Search both providers
+search_params = {
+    'collections': ['sentinel-2-l2a'],
+    'bbox': [-120.0, 35.0, -119.0, 36.0],  # California
+    'datetime': '2024-07-01/2024-07-31',
+    'limit': 5
+}
+
+pc_results = pc.search(**search_params)
+es_results = es.search(**search_params)
+
+pc_items = pc_results.get_all_items()
+es_items = es_results.get_all_items()
+
+print(f"PC found: {len(pc_items)} items")
+print(f"ES found: {len(es_items)} items")
+
+# Filter both collections
+pc_clear = filter_by_cloud_cover(pc_items, max_cloud_cover=20)
+es_clear = filter_by_cloud_cover(es_items, max_cloud_cover=20)
+
+# Download from both providers
+print("📦 Downloading from Planetary Computer...")
+pc_downloads = download_items(
+    pc_clear[:2], 
+    base_destination="./pc_data/",
+    asset_keys=['B08', 'B04'],  # NIR, Red for NDVI
+)
+
+print("📦 Downloading from EarthSearch...")
+es_downloads = download_items(
+    es_clear[:2], 
+    base_destination="./es_data/",
+    asset_keys=['nir', 'red'],  # ES naming convention
+)
+```
+
+#### Example 5: Seasonal Analysis Workflow
+```python
+print("\n🌱 Setting up seasonal analysis...")
+
+def collect_seasonal_data(bbox, year):
+    """Collect data for seasonal analysis."""
+    seasons = {
+        'spring': f'{year}-03-01/{year}-05-31',
+        'summer': f'{year}-06-01/{year}-08-31', 
+        'fall': f'{year}-09-01/{year}-11-30',
+        'winter': f'{year}-12-01/{year+1}-02-28'
+    }
+    
+    seasonal_data = {}
+    
+    for season, date_range in seasons.items():
+        print(f"🔍 Searching {season} {year} data...")
+        
+        results = pc.search(
+            collections=['sentinel-2-l2a'],
+            bbox=bbox,
+            datetime=date_range,
+            query={'eo:cloud_cover': {'lt': 25}},
+            limit=10
+        )
+        
+        items = results.get_all_items()
+        filtered_items = filter_by_cloud_cover(items, max_cloud_cover=20)
+        
+        # Get URLs for NDVI calculation
+        urls = filtered_items.get_all_urls(['B08', 'B04'])  # NIR, Red
+        
+        seasonal_data[season] = {
+            'count': len(filtered_items),
+            'date_range': date_range,
+            'urls': urls
+        }
+        
+        print(f"  Found {len(filtered_items)} clear scenes")
+    
+    return seasonal_data
+
+# Collect seasonal data
+bbox = [-121.0, 38.0, -120.5, 38.5]  # Northern California
+seasonal_data = collect_seasonal_data(bbox, 2024)
+
+# Download seasonal data using utils
+seasonal_downloads = download_seasonal_data(
+    seasonal_data,
+    base_destination="./seasonal_analysis/",
+    seasons=['spring', 'summer'],  # Only spring and summer
+    asset_keys=['B08', 'B04']  # NIR and Red bands
+)
+```
+
+#### Example 6: URL Management and Re-signing
+```python
+print("\n🔐 URL management example...")
+
+# Get some URLs from items
+item = pc_items[^0] if pc_items else clear_items[^0]
+all_urls = item.get_all_asset_urls()
+
+# Check URL status
+for asset, url in list(all_urls.items())[:3]:
+    print(f"\n🔗 Asset: {asset}")
+    print(f"   Signed: {is_signed_url(url)}")
+    print(f"   Expired: {is_url_expired(url)}")
+    
+    # Re-sign if needed
+    fresh_url = re_sign_url_if_needed(url, provider="planetary_computer")
+    if fresh_url != url:
+        print(f"   ✅ URL was re-signed")
+```
+
+#### Example 7: Batch Processing with URL Dictionary
+```python
+print("\n📊 Batch processing workflow...")
+
+# Create a custom URL dictionary from search results
+custom_urls = {}
+for i, item in enumerate(clear_items[:3]):
+    item_id = f"sentinel2_{item.id[-8:]}"  # Shortened ID
+    # Get specific bands for analysis
+    item_urls = item.get_band_urls(['B02', 'B03', 'B04', 'B08'])
+    custom_urls[item_id] = item_urls
+
+print(f"Created custom URL dictionary with {len(custom_urls)} items")
+
+# Download using URL dictionary
+batch_downloads = download_url_dict(
+    {k: v for k, v in list(custom_urls.items())[^0].items()},  # First item only
+    base_destination="./batch_data/",
+    provider="planetary_computer",
+    create_subfolders=True
+)
+```
+# Example 8: Export and Import Workflow
+```python
+print("\n💾 Export/Import workflow...")
+
+# Export URLs to JSON for later processing
+import json
+with open('./data_urls.json', 'w') as f:
+    json.dump(custom_urls, f, indent=2)
+
+print("📤 URLs exported to data_urls.json")
+
+# Download from JSON file using utils
+json_downloads = download_from_json(
+    './data_urls.json',
+    destination="./from_json/",
+    asset_keys=['B04', 'B08'],  # Only specific bands
+    create_folders=True
+)
+```
+
+#### Example 9: Download Summary and Reporting
+```python
+print("\n📋 Creating download summary...")
+
+# Combine all download results
+all_downloads = {
+    'rgb_downloads': rgb_downloads,
+    'pc_downloads': pc_downloads,
+    'es_downloads': es_downloads,
+    'seasonal_downloads': seasonal_downloads,
+    'batch_downloads': batch_downloads,
+    'json_downloads': json_downloads
+}
+
+# Create comprehensive summary
+summary = create_download_summary(
+    all_downloads, 
+    output_file="./download_report.json"
+)
+
+print(f"📊 Download Summary:")
+print(f"   Total files: {summary['total_files']}")
+print(f"   Successful: {summary['successful_downloads']}")
+print(f"   Failed: {summary['failed_downloads']}")
+print(f"   Success rate: {summary['success_rate']}")
+```
+
+#### Example 10: Advanced Filtering and Processing
+```python
+print("\n🔬 Advanced processing workflow...")
+
+# Multi-step filtering
+def advanced_processing_workflow(bbox, max_cloud=10):
+    """Advanced workflow with multiple filtering steps."""
+    
+    # Step 1: Search with broader criteria
+    results = pc.search(
+        collections=['sentinel-2-l2a'],
+        bbox=bbox,
+        datetime='2024-06-01/2024-09-30',
+        limit=50
+    )
+    
+    items = results.get_all_items()
+    print(f"Step 1: Found {len(items)} total items")
+    
+    # Step 2: Filter by cloud cover
+    clear_items = filter_by_cloud_cover(items, max_cloud_cover=max_cloud)
+    print(f"Step 2: {len(clear_items)} items with <{max_cloud}% clouds")
+    
+    # Step 3: Convert to DataFrame for advanced filtering
+    df = clear_items.to_dataframe(include_geometry=False)
+    
+    # Step 4: Filter by date (summer months only)
+    summer_mask = df['datetime'].str.contains('2024-0[^678]')  # June, July, August
+    summer_items_ids = df[summer_mask]['id'].tolist()
+    
+    # Step 5: Get items for summer period
+    summer_items = [item for item in clear_items if item.id in summer_items_ids]
+    print(f"Step 3: {len(summer_items)} summer items")
+    
+    # Step 6: Download analysis-ready data
+    analysis_downloads = download_items(
+        summer_items[:5],  # Top 5 summer items
+        base_destination="./analysis_ready/",
+        asset_keys=['B02', 'B03', 'B04', 'B08', 'B11', 'B12'],  # Multi-spectral
+        create_product_folders=True
+    )
+    
+    return analysis_downloads, summer_items
+
+# Run advanced workflow
+analysis_results, summer_items = advanced_processing_workflow(
+    bbox=[-122.0, 37.0, -121.5, 37.5],  # San Francisco Bay
+    max_cloud=5
+)
+
+print(f"✅ Analysis-ready data downloaded for {len(analysis_results)} items")
+```
+
+#### Example 11: Error Handling and Resilient Downloads
+```python
+print("\n🛡️ Resilient download example...")
+
+def resilient_download(items, max_retries=3):
+    """Download with retry logic and error handling."""
+    
+    successful_downloads = {}
+    failed_downloads = {}
+    
+    for item in items[:2]:  # Process first 2 items
+        item_id = item.id
+        retries = 0
+        
+        while retries < max_retries:
+            try:
+                # Try to download key bands
+                downloads = download_items(
+                    [item],
+                    base_destination=f"./resilient_data/attempt_{retries+1}/",
+                    asset_keys=['B04', 'B08'],
+                    create_product_folders=True
+                )
+                
+                successful_downloads[item_id] = downloads
+                print(f"✅ Successfully downloaded {item_id}")
+                break
+                
+            except Exception as e:
+                retries += 1
+                print(f"❌ Attempt {retries} failed for {item_id}: {e}")
+                
+                if retries >= max_retries:
+                    failed_downloads[item_id] = str(e)
+                    print(f"💀 Gave up on {item_id} after {max_retries} attempts")
+    
+    return successful_downloads, failed_downloads
+
+# Run resilient download
+successful, failed = resilient_download(clear_items)
+print(f"Resilient download completed: {len(successful)} successful, {len(failed)} failed")
+
+print("\n🎉 All utils function examples completed!")
+print(f"Check your './data/' directory for downloaded files")
+```
 
 ## FAQ
 
