@@ -55,16 +55,14 @@ pip install open-geodata-api
 ### Optional Dependencies
 
 ```bash
-# For spatial analysis (geopandas)
+# For spatial analysis (shapely, geopandas)
 pip install open-geodata-api[spatial]
 
-# For raster reading suggestions
-pip install open-geodata-api[raster-rioxarray]  # rioxarray + xarray
-pip install open-geodata-api[raster-rasterio]   # rasterio only
-pip install open-geodata-api[raster-gdal]       # GDAL
+# For raster reading suggestions (rioxarray,rasterio, xarray)
+pip install open-geodata-api[io]  # rioxarray + xarray
 
-# For plotting examples
-pip install open-geodata-api[plotting]
+# For complete examples (shapely, geopandas, rioxarray, rasterio, xarray)
+pip install open-geodata-api[complete]
 
 # Development dependencies
 pip install open-geodata-api[dev]
@@ -100,7 +98,7 @@ results = pc.search(
 
 # Get items and URLs
 items = results.get_all_items()
-item = items[^0]
+item = items[0]
 
 # Get ready-to-use URLs
 blue_url = item.get_asset_url('B02')  # Automatically signed!
@@ -145,7 +143,7 @@ es_items = es_results.get_all_items()
 print(f"Found: PC={len(pc_items)}, ES={len(es_items)} items")
 
 # 5. Get URLs and use with your preferred package
-item = pc_items[^0]
+item = pc_items[0]
 item.print_assets_info()
 
 # Get specific bands
@@ -391,8 +389,8 @@ print(f"EarthSearch: {len(es_items)} items")
 
 # Compare asset availability
 if pc_items and es_items:
-    pc_assets = pc_items[^0].list_assets()
-    es_assets = es_items[^0].list_assets()
+    pc_assets = pc_items[0].list_assets()
+    es_assets = es_items[0].list_assets()
     
     print(f"PC assets: {pc_assets[:5]}")
     print(f"ES assets: {es_assets[:5]}")
@@ -412,7 +410,7 @@ rgb_urls = items.get_all_urls(['B04', 'B03', 'B02'])  # Red, Green, Blue
 items.export_urls_json('sentinel2_rgb_urls.json', ['B04', 'B03', 'B02'])
 
 # Use the URLs with any package
-first_item_urls = rgb_urls[list(rgb_urls.keys())[^0]]
+first_item_urls = rgb_urls[list(rgb_urls.keys())[0]]
 print(f"Red band URL: {first_item_urls['B04']}")
 
 # Example with different raster packages
@@ -497,7 +495,7 @@ es_results = es.search(
 )
 
 es_items = es_results.get_all_items()
-item = es_items[^0]
+item = es_items[0]
 
 # EarthSearch asset names
 item.print_assets_info()
@@ -554,7 +552,7 @@ filtered_df = df[df['eo:cloud_cover'] < 20]  # Refine cloud cover
 
 ```python
 # Let the package handle URL signing automatically
-item = items[^0]
+item = items[0]
 
 # This automatically handles signing based on provider
 blue_url = item.get_asset_url('B02')  # PC: signed, ES: validated
@@ -755,7 +753,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 # Check what URLs are being generated
-item = items[^0]
+item = items[0]
 print(f"Item ID: {item.id}")
 print(f"Provider: {item.provider}")
 
@@ -852,7 +850,11 @@ seasonal_data = setup_temporal_analysis(
 
 
 ### Integration with Other Libraries
-
+##### Install Required Packages
+```python
+pip install stackstac pystac
+```
+##### The Custom Functions
 ```python
 # Example: Integration with STAC-tools
 def integrate_with_stac_tools(items):
@@ -899,6 +901,14 @@ def prepare_for_stackstac(items, bands=['B04', 'B03', 'B02']):
     except ImportError:
         print("stackstac not available")
         return None
+
+if __name__ == "__main__":
+    # Use the functions
+    stac_items = integrate_with_stac_tools(items)
+    stackstac_items = prepare_for_stackstac(items)
+    print(f"STAC items: {stac_items} \nStackSTAC items: {stackstac_items}")
+    print(f"STAC items: {len(stac_items)} \nStackSTAC items: {len(stackstac_items)}")
+    print("Integration and preparation complete!")
 ```
 
 
@@ -940,6 +950,7 @@ def add_caching_headers(url):
 
 # Use custom processing
 cached_urls = process_urls_custom(items, add_caching_headers)
+print(f"Cached URLs: {cached_urls}")
 ```
 
 
