@@ -1,4 +1,6 @@
-![Open Geodata API Icon](icon.png)
+<p align="center">
+  <img src="./icon.png" alt="Open Geodata API Icon" width="150" height="150" />
+</p>
 
 # Open Geodata API - Complete User Guide
 
