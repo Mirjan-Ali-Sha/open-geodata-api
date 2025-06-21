@@ -967,7 +967,7 @@ def add_caching_headers(url):
 cached_urls = process_urls_custom(items, add_caching_headers)
 print(f"Cached URLs: {cached_urls}")
 ```
-## Utils Functions Usage
+## Utils Functions
 
 ### Utils Functions - Usage Examples
 
@@ -1179,7 +1179,7 @@ batch_downloads = download_url_dict(
     create_subfolders=True
 )
 ```
-# Example 8: Export and Import Workflow
+#### Example 8: Export and Import Workflow
 ```python
 print("\n💾 Export/Import workflow...")
 
