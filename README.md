@@ -32,17 +32,17 @@
 
 #### **What It Does**
 
-✅ **One Interface** - Access Microsoft Planetary Computer \& AWS EarthSearch APIs
-✅ **Smart URLs** - Automatic signing, validation, and expiration handling
-✅ **Your Choice** - Use any raster package (rioxarray, rasterio, GDAL)
+✅ **One Interface** - Access Microsoft Planetary Computer \& AWS EarthSearch APIs<br>
+✅ **Smart URLs** - Automatic signing, validation, and expiration handling<br>
+✅ **Your Choice** - Use any raster package (rioxarray, rasterio, GDAL)<br>
 ✅ **Complete Workflow** - Search → Filter → Download → Analyze
 
 #### **Key Capabilities**
 
-✅ **Python API** - Programmatic access with full flexibility
-✅ **Command Line** - `ogapi` CLI for all operations with help
-✅ **Smart Downloads** - Progress tracking, resume, batch processing
-✅ **Data Filtering** - Cloud cover, temporal, quality-based filtering
+✅ **Python API** - Programmatic access with full flexibility<br>
+✅ **Command Line** - `ogapi` CLI for all operations with help<br>
+✅ **Smart Downloads** - Progress tracking, resume, batch processing<br>
+✅ **Data Filtering** - Cloud cover, temporal, quality-based filtering<br>
 ✅ **URL Management** - Export, validate, and refresh URLs automatically
 
 
