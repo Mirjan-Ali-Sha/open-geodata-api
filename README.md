@@ -1333,367 +1333,367 @@ print(f"Check your './data/' directory for downloaded files")
 Open Geodata API provides a comprehensive CLI for satellite data discovery, filtering, and downloading. After installation, use the `ogapi` command to access all functionality.
 
 #### Show package information
-```cli
+```bash
 ogapi info
 ```
 
 #### Get help for any command
-```cli
+```bash
 ogapi --help
 ```
-```cli
+```bash
 ogapi collections --help
 ```
-```cli
+```bash
 ogapi search items --help
 ```
 ### Collections Management
 #### List all collections from both providers
-```cli
+```bash
 ogapi collections list
 ```
 #### List from specific provider
-```cli
+```bash
 ogapi collections list --provider pc
 ```
-```cli
+```bash
 ogapi collections list --provider es
 ```
 
 #### Filter collections by keyword
-```cli
+```bash
 ogapi collections list --filter sentinel
 ```
 
 #### Save results to file
-```cli
+```bash
 ogapi collections list --output collections.json
 ```
 
 ### Search Collections
 #### Find collections by keyword
-```cli
+```bash
 ogapi collections search sentinel
 ```
-```cli
+```bash
 ogapi collections search landsat --provider pc
 ```
-```cli
+```bash
 ogapi collections search modis --provider both
 ```
 
 ### Get Collection Information
 #### Get detailed collection info
-```cli
+```bash
 ogapi collections info sentinel-2-l2a
 ```
-```cli
+```bash
 ogapi collections info sentinel-2-l2a --provider es
 ```
-```cli
+```bash
 ogapi collections info landsat-c2-l2 --output collection_info.json
 ```
 
 ### Data Search
 #### Search for Sentinel-2 data in Seattle area
-```cli
+```bash
 ogapi search items --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --datetime "2024-06-01/2024-08-31" --limit 10
 ```
 
 #### Search with cloud cover filter
-```cli
+```bash
 ogapi search items --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --cloud-cover 20 --output search_results.json
 ```
 
 #### Search multiple collections
-```cli
+```bash
 ogapi search items --collections "sentinel-2-l2a,landsat-c2-l2" --bbox "-120.0,35.0,-119.0,36.0" --datetime "2024-01-01/2024-12-31"
 ```
 #### Advanced Search with JSON Query
-```cli
+```bash
 ogapi search items --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --query '{"eo:cloud_cover":{"lt":15},"platform":{"eq":"sentinel-2a"}}' --output advanced_search.json
 ```
 
 #### Find recent clear data (last 30 days)
-```cli
+```bash
 ogapi search quick sentinel-2-l2a "-122.5,47.5,-122.0,48.0"
 ```
 
 #### Customize time range and cloud threshold
-```cli
+```bash
 ogapi search quick sentinel-2-l2a "-122.5,47.5,-122.0,48.0" --days 7 --cloud-cover 10 --limit 5
 ```
 
 #### Save results for later processing
-```cli
+```bash
 ogapi search quick landsat-c2-l2 "-120.0,35.0,-119.0,36.0" --output recent_landsat.json
 ```
 
 ### Compare Data Availability Between Providers
 #### Compare Sentinel-2 availability
-```cli
+```bash
 ogapi search compare --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --datetime "2024-06-01/2024-08-31"
 ```
 #### Compare with cloud filtering
-```cli
+```bash
 ogapi search compare --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --cloud-cover 25 --output comparison_results.json
 ```
 
 ### Working with Items
 #### Show info for first item in search results
-```cli
+```bash
 ogapi items info search_results.json
 ```
 #### Show info for specific item by index
-```cli
+```bash
 ogapi items info search_results.json --item-index 2
 ```
 #### Show detailed metadata
-```cli
+```bash
 ogapi items info search_results.json --show-all --output item_details.json
 ```
 #### List all assets for an item
-```cli
+```bash
 ogapi items assets search_results.json
 ```
 #### Filter assets by pattern
-```cli
+```bash
 ogapi items assets search_results.json --type "image/tiff"
 ```
 #### Show URLs for assets
-```cli
+```bash
 ogapi items assets search_results.json --show-urls
 ```
 #### Get URLs for RGB bands
-```cli
+```bash
 ogapi items urls search_results.json --assets "B04,B03,B02"
 ```
 #### Get all asset URLs
-```cli
+```bash
 ogapi items urls search_results.json --output all_urls.json
 ```
 #### Get URLs by pattern
-```cli
+```bash
 ogapi items urls search_results.json --pattern "B0" --output optical_bands.json
 ```
 #### Get unsigned URLs
-```cli
+```bash
 ogapi items urls search_results.json --unsigned
 ```
 ### Compare Items by Quality
 #### Compare items by cloud cover (find clearest)
-```cli
+```bash
 ogapi items compare search_results.json
 ```
 #### Compare by date (find most recent)
-```cli
+```bash
 ogapi items compare search_results.json --metric date
 ```
 #### Compare asset availability
-```cli
+```bash
 ogapi items compare search_results.json --metric assets --max-items 10
 ```
 ### Data Download
 #### Download all assets from search results
-```cli
+```bash
 ogapi download search-results search_results.json
 ```
 #### Download specific bands only
-```cli
+```bash
 ogapi download search-results search_results.json --assets "B04,B03,B02" --destination "./rgb_data/"
 ```
 #### Download with additional filtering
-```cli
+```bash
 ogapi download search-results search_results.json --cloud-cover 15 --max-items 5 --assets "B08,B04"
 ```
 #### Create flat file structure
-```cli
+```bash
 ogapi download search-results search_results.json --flat-structure --destination "./satellite_data/
 ```
 #### Download single file
-```cli
+```bash
 ogapi download url "https://example.com/sentinel2_B04.tif"
 ```
 #### Download to specific location
-```cli
+```bash
 ogapi download url "https://example.com/B04.tif" --destination "./data/red_band.tif"
 ```
 #### Download with provider specification (it will handdle url validation)
-```cli
+```bash
 ogapi download url "https://pc.example.com/B04.tif" --provider pc
 ```
 #### Download from exported URLs
-```cli
+```bash
 ogapi download urls-json exported_urls.json
 ```
 #### Custom destination
-```cli
+```bash
 ogapi download urls-json urls.json --destination "./downloads/" --flat-structure
 ```
 #### Download all seasons from seasonal JSON
-```cli
+```bash
 ogapi download seasonal seasonal_data.json
 ```
 #### Download specific seasons and assets
-```cli
+```bash
 ogapi download seasonal seasonal_data.json --seasons "spring,summer" --assets "B08,B04" --destination "./time_series/"
 ```
 ### Filter by Cloud Cover
 #### Filter search results by cloud cover
-```cli
+```bash
 ogapi utils filter-clouds search_results.json --max-cloud-cover 20
 ```
 #### Filter and save results
-```cli
+```bash
 ogapi utils filter-clouds search_results.json --max-cloud-cover 15 --output clear_results.json --show-stats
 ```
 ### Export URLs
 #### Export all URLs from search results
-```cli
+```bash
 ogapi utils export-urls search_results.json --output all_urls.json
 ```
 #### Export specific assets
-```cli
+```bash
 ogapi utils export-urls search_results.json --output rgb_urls.json --assets "B04,B03,B02"
 ```
 #### Export in simple format
-```cli
+```bash
 ogapi utils export-urls search_results.json --output simple_urls.json --format simple
 ```
 #### Export unsigned URLs
-```cli
+```bash
 ogapi utils export-urls search_results.json --output unsigned_urls.json --unsigned
 ```
 ### Validate URLs
 #### Basic URL validation
-```cli
+```bash
 ogapi utils validate-urls urls.json
 ```
 #### Check accessibility (HTTP requests)
-```cli
+```bash
 ogapi utils validate-urls urls.json --check-access
 ```
 #### Fix expired URLs
-```cli
+```bash
 ogapi utils validate-urls urls.json --fix-expired --output fixed_urls.json
 ```
 #### Skip expiry check for speed
-```cli
+```bash
 ogapi utils validate-urls urls.json --no-check-expiry
 ```
 ### Analyze Search Results
 #### Analyze cloud cover distribution
-```cli
+```bash
 ogapi utils analyze search_results.json
 ```
 #### Temporal analysis
-```cli
+```bash
 ogapi utils analyze search_results.json --metric temporal
 ```
 #### Asset availability analysis
-```cli
+```bash
 ogapi utils analyze search_results.json --metric assets --output analysis_report.json
 ```
 ### Create Download Summaries
 #### Create detailed download summary
-```cli
+```bash
 ogapi utils download-summary download_results.json
 ```
 #### Brief summary
-```cli
+```bash
 ogapi utils download-summary results.json --format brief
 ```
 #### Save summary report
-```cli
+```bash
 ogapi utils download-summary results.json --output report.json
 ```
 ### Complete Workflow Examples
 #### 1.1: Search for data (Basic RGB Download Workflow)
-```cli
+```bash
 ogapi search items --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --datetime "2024-06-01/2024-08-31" --cloud-cover 20 --output search_results.json
 ```
 #### 1.2: Filter for very clear imagery
-```cli
+```bash
 ogapi utils filter-clouds search_results.json --max-cloud-cover 10 --output clear_results.json
 ```
 #### 1.3: Download RGB bands
-```cli
+```bash
 ogapi download search-results clear_results.json --assets "B04,B03,B02" --destination "./rgb_analysis/"
 ```
 #### 1.4: Create summary
-```cli
+```bash
 ogapi utils download-summary download_results.json
 ```
 #### 2.1: Search for data (NDVI Analysis Workflow)
-```cli
+```bash
 ogapi search items --collections sentinel-2-l2a --bbox "-120.0,35.0,-119.0,36.0" --datetime "2024-01-01/2024-12-31" --cloud-cover 25 --output yearly_search.json
 ```
 #### 2.2: Filter by seasons and export URLs
-```cli
+```bash
 ogapi utils filter-clouds yearly_search.json --max-cloud-cover 15 --output clear_yearly.json
 ```
-```cli
+```bash
 ogapi utils export-urls clear_yearly.json --assets "B08,B04" --output ndvi_urls.json
 ```
 #### 2.3: Download NDVI bands
-```cli
+```bash
 ogapi download urls-json ndvi_urls.json --destination "./ndvi_analysis/"
 ```
 #### 3.1 Compare data availability (Multi-Provider Comparison)
-```cli
+```bash
 ogapi search compare --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --datetime "2024-06-01/2024-08-31" --output comparison.json
 ```
 #### 3.2 Search both providers separately
-```cli
+```bash
 ogapi search items --provider pc --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --cloud-cover 20 --output pc_results.json
 ```
-```cli
+```bash
 ogapi search items --provider es --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --cloud-cover 20 --output es_results.json
 ```
 #### 3.3 Download from best provider
-```cli
+```bash
 ogapi download search-results pc_results.json --max-items 3 --destination "./pc_data/"
 ```
 #### 4.1 Search and analyze (Quality Assessment Workflow) 
-```cli
+```bash
 ogapi search items --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --limit 50 --output large_search.json
 ```
 #### 4.2 Analyze data quality 
-```cli
+```bash
 ogapi utils analyze large_search.json --metric cloud_cover
 ```
-```cli
+```bash
 ogapi utils analyze large_search.json --metric temporal
 ```
-```cli
+```bash
 ogapi utils analyze large_search.json --metric assets
 ```
 #### 4.3 Compare individual items
-```cli
+```bash
 ogapi items compare large_search.json --metric cloud_cover
 ```
 #### 4.4 Download best items only
-```cli
+```bash
 ogapi utils filter-clouds large_search.json --max-cloud-cover 10 --output best_quality.json
 ```
-```cli
+```bash
 ogapi download search-results best_quality.json --max-items 5
 ```
 ### Global Options
 **All commands support these global options:**
 #### Enable verbose output for debugging
-```cli
+```bash
 ogapi --verbose [command]
 ```
 #### Show version
-```cli
+```bash
 ogapi --version
 ```
 #### Get help for any command
-```cli
+```bash
 ogapi [command] --help
 ```
-```cli
+```bash
 ogapi [command] [subcommand] --help
 ```
 
@@ -1708,11 +1708,11 @@ ogapi [command] [subcommand] --help
 
 ### Environment Variables
 #### Optional: Set default provider
-```cli
+```bash
 export OGAPI_DEFAULT_PROVIDER=pc
 ```
 #### Optional: Set default destination
-```cli
+```bash
 export OGAPI_DEFAULT_DEST=./satellite_data/
 ```
 
