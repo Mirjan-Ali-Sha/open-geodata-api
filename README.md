@@ -16,7 +16,8 @@
 8. [Troubleshooting](README.md#troubleshooting)
 9. [Advanced Usage](README.md#advanced-usage)
 10. [Utility Functions](README.md#utils-functions)
-11. [FAQ](README.md#faq)
+11. [CLI Usage](README.md#cli-usage)
+12. [FAQ](README.md#faq)
 
 ## Introduction
 
@@ -33,7 +34,7 @@
 ✅ **Clean API**: Intuitive, Pythonic interface
 ✅ **Production Ready**: Robust error handling and comprehensive testing
 
-### Key Features of Extra Utils Functions:
+### Key Features of Extra Utils Functions
 ✅ **Intelligent Input Detection** - Automatically handles URLs, dicts, items, seasonal data
 ✅ **Automatic URL Management** - Re-signs expired URLs with warnings
 ✅ **Flexible Destinations** - File, directory, or auto-naming support
@@ -43,6 +44,17 @@
 ✅ **Provider Awareness** - Handles PC signing and ES validation
 ✅ **Batch Processing** - Efficient handling of multiple files
 ✅ **Summary Reports** - Detailed download statistics
+
+### Key Help Features Added to CLI
+✅ **Automatic -h and --help** - Click provides these automatically
+✅ **Comprehensive docstrings** - Detailed help for every command
+✅ **Usage examples** - Real-world examples in help text
+✅ **Parameter descriptions** - Clear explanation of all options
+✅ **Error guidance** - Helpful suggestions when commands fail
+✅ **Examples command** - Dedicated examples for common workflows
+✅ **Verbose mode support** - Enhanced debugging information
+✅ **Provider abbreviations** - Clear explanation of pc/es shortcuts
+
 
 ### Supported APIs
 
@@ -1324,6 +1336,26 @@ print(f"Resilient download completed: {len(successful)} successful, {len(failed)
 print("\n🎉 All utils function examples completed!")
 print(f"Check your './data/' directory for downloaded files")
 ```
+
+## CLI Usage
+
+### Command Line Interface (CLI) Usage
+Open Geodata API provides a comprehensive CLI for satellite data discovery, filtering, and downloading. After installation, use the `ogapi` command to access all functionality.
+
+#### Show package information
+<br>`ogapi info`<br>
+
+#### Get help for any command
+```python
+ogapi --help
+ogapi collections --help
+ogapi search items --help
+```
+#### Collections Management
+##### List all collections from both providers
+`ogapi collections list`
+
+
 
 ## FAQ
 

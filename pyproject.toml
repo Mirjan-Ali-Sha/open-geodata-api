@@ -79,6 +79,12 @@ dev = [
     "sphinx-rtd-theme",
 ]
 
+# CLI Entry Points - This is the key addition!
+[project.scripts]
+ogapi = "open_geodata_api.cli.main:cli"
+open-geodata-api = "open_geodata_api.cli.main:cli"
+
+
 [project.urls]
 "License" = "https://github.com/Mirjan-Ali-Sha/open-geodata-api/blob/main/LICENSE"
 "Third-Party Notices" = "https://github.com/Mirjan-Ali-Sha/open-geodata-api/blob/main/THIRD_PARTY_NOTICES.md"
@@ -87,15 +93,24 @@ Documentation = "https://open-geodata-api.readthedocs.io"
 Repository = "https://github.com/Mirjan-Ali-Sha/open-geodata-api"
 "Bug Reports" = "https://github.com/Mirjan-Ali-Sha/open-geodata-api/issues"
 
-[tool.hatch.build]
-# these globs go into both sdist and wheel
-include = [
-  "icon.png",         # your icon
-  "LICENSE",          # license file
-]
-
 [tool.hatch.version]
 path = "open_geodata_api/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["open_geodata_api"]
+# Include additional files in the wheel
+artifacts = [
+    "icon.png",
+    "LICENSE",
+    "README.md",
+]
+
+[tool.hatch.build.targets.sdist]
+# Include additional files in source distribution
+include = [
+    "/open_geodata_api",
+    "/icon.png", 
+    "/LICENSE",
+    "/README.md",
+    "/pyproject.toml",
+]
