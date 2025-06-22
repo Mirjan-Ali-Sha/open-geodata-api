@@ -10,7 +10,8 @@ Open Geodata API Documentation
 **🛰️ Unified Python Client for Satellite Data Access**
 
 Open Geodata API provides seamless access to multiple open geospatial data APIs with automatic URL management, intelligent filtering, and maximum flexibility for data reading.
-
+<br>
+**NOTE:** This documentation is a work in progress. Contributions are welcome! I appreciate your patience as I continue to improve it. **AI** helped me a lot to generate this documentation, but it still needs a lot of work to be complete and polished. So maybe all Examples are not tested, and some sections may be incomplete or not fully accurate. If you find any issues, please open an issue on GitHub or contribute directly to the documentation.
 .. raw:: html
 
    <div class="features-grid">
@@ -145,7 +146,7 @@ Community & Support
 - **GitHub Repository**: `open-geodata-api <https://github.com/Mirjan-Ali-Sha/open-geodata-api>`_
 - **Issue Tracker**: `Report Bugs <https://github.com/Mirjan-Ali-Sha/open-geodata-api/issues>`_
 - **Documentation**: `Read the Docs <https://open-geodata-api.readthedocs.io>`_
-- **NOTE:** This documentation is a work in progress. Contributions are welcome! I appreciate your patience as I continue to improve it. **AI** helped me a lot to generate this documentation, but it still needs a lot of work to be complete and polished. So maybe all Examples are not tested, and some sections may be incomplete or not fully accurate. If you find any issues, please open an issue on GitHub or contribute directly to the documentation.
+
 
 Indices and Tables
 ------------------
