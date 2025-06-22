@@ -11,7 +11,9 @@ Open Geodata API Documentation
 
 Open Geodata API provides seamless access to multiple open geospatial data APIs with automatic URL management, intelligent filtering, and maximum flexibility for data reading.
 
-**NOTE:** This documentation is a work in progress. Contributions are welcome! I appreciate your patience as I continue to improve it. **AI** helped me a lot to generate this documentation, but it still needs a lot of work to be complete and polished. So maybe all Examples are not tested, and some sections may be incomplete or not fully accurate. If you find any issues, please open an issue on GitHub or contribute directly to the documentation.
+**NOTE:** 
+      This documentation is a work in progress. Contributions are welcome! I appreciate your patience as I continue to improve it. **AI** helped me a lot to generate this documentation, but it still needs a lot of work to be complete and polished. So maybe all Examples are not tested, and some sections may be incomplete or not fully accurate. If you find any issues, please open an issue on GitHub or contribute directly to the documentation.
+
 .. raw:: html
 
    <div class="features-grid">
