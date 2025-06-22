@@ -24,28 +24,24 @@ For Spatial Analysis
 
 Includes: geopandas, shapely
 
-For Raster Reading (Suggestions)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For Raster Reading
+~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
-   # Option 1: rioxarray + xarray
-   pip install open-geodata-api[raster-rioxarray]
-   
-   # Option 2: rasterio only
-   pip install open-geodata-api[raster-rasterio]
-   
-   # Option 3: GDAL
-   pip install open-geodata-api[raster-gdal]
+   # For raster I/O capabilities
+   pip install open-geodata-api[io]
 
-Complete Installation
-~~~~~~~~~~~~~~~~~~~~~
+Includes: rioxarray, rasterio, xarray
+
+For Complete Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
    pip install open-geodata-api[complete]
 
-Includes all optional dependencies.
+Includes all optional dependencies: spatial analysis + raster I/O
 
 Development Installation
 ------------------------
@@ -72,21 +68,25 @@ Dependencies
 Core Dependencies
 ~~~~~~~~~~~~~~~~~
 
-* requests >= 2.25.0
-* pandas >= 1.3.0  
-* planetary-computer >= 1.0.0
+- requests >= 2.25.0
+- pandas >= 1.3.0  
+- planetary-computer >= 1.0.0
+- tqdm >= 4.67.1
+- click >= 8.0.0
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 
-* geopandas >= 0.10.0 (for spatial operations)
-* rioxarray >= 0.11.0 (for raster reading)
-* rasterio >= 1.3.0 (for raster reading)
-* matplotlib >= 3.3.0 (for plotting examples)
+- geopandas >= 0.10.0 (for spatial operations)
+- rioxarray >= 0.11.0 (for raster reading)
+- rasterio >= 1.3.0 (for raster reading)
+- xarray >= 0.19.0 (for n-dimensional arrays)
+- shapely >= 1.8.0 (for geometric operations)
 
 System Requirements
 -------------------
 
-* Python 3.8+
-* Operating System: Linux, macOS, Windows
-* Memory: 1GB+ RAM recommended for large datasets
+- Python 3.8+
+- Operating System: Linux, macOS, Windows
+- Memory: 1GB+ RAM recommended for large datasets
+- Network: Internet connection for API access

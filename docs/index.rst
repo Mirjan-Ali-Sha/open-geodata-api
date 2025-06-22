@@ -1,106 +1,154 @@
-Welcome to Open Geodata API Documentation
-==========================================
+.. raw:: html
 
-.. image:: https://img.shields.io/pypi/v/open-geodata-api.svg
-   :target: https://pypi.org/project/open-geodata-api/
-   :alt: PyPI version
+   <p align="center">
+     <img src="_static/icon.png" alt="Open Geodata API Icon" width="150" height="150" />
+   </p>
 
-.. image:: https://img.shields.io/pypi/pyversions/open-geodata-api.svg
-   :target: https://pypi.org/project/open-geodata-api/
-   :alt: Python versions
+Open Geodata API Documentation
+==============================
 
-**Open Geodata API** is a unified Python client library that provides seamless access to multiple open geospatial data APIs. It focuses on API access, search, and URL management while maintaining maximum flexibility for data reading and processing.
+**🛰️ Unified Python Client for Satellite Data Access**
 
-Key Features
-------------
+Open Geodata API provides seamless access to multiple open geospatial data APIs with automatic URL management, intelligent filtering, and maximum flexibility for data reading.
 
-✅ **Unified Access**: Single interface for multiple geospatial APIs  
-✅ **Automatic URL Management**: Handles signing (PC) and validation (ES) automatically  
-✅ **Maximum Flexibility**: Use any raster reading package you prefer  
-✅ **Zero Lock-in**: No forced dependencies or reading methods  
-✅ **Clean API**: Intuitive, Pythonic interface  
-✅ **Production Ready**: Robust error handling and comprehensive testing  
+.. raw:: html
 
-Supported APIs
---------------
+   <div class="features-grid">
+     <div class="feature-box">
+       <h3>🎯 One Interface</h3>
+       <p>Access Microsoft Planetary Computer & AWS EarthSearch APIs</p>
+     </div>
+     <div class="feature-box">
+       <h3>🔐 Smart URLs</h3>
+       <p>Automatic signing, validation, and expiration handling</p>
+     </div>
+     <div class="feature-box">
+       <h3>📦 Your Choice</h3>
+       <p>Use any raster package (rioxarray, rasterio, GDAL)</p>
+     </div>
+     <div class="feature-box">
+       <h3>🔄 Complete Workflow</h3>
+       <p>Search → Filter → Download → Analyze</p>
+     </div>
+   </div>
 
-* **Microsoft Planetary Computer** - With automatic URL signing
-* **Element84 EarthSearch** - With URL validation
+Quick Start
+-----------
 
-Quick Example
--------------
+.. code-block:: bash
+
+   # Install the package
+   pip install open-geodata-api
 
 .. code-block:: python
 
    import open_geodata_api as ogapi
 
-   # Get clients for both APIs
-   clients = ogapi.get_clients(pc_auto_sign=True)
-   pc = clients['planetary_computer']
-   
-   # Search for Sentinel-2 data
+   # Create client with auto-signing
+   pc = ogapi.planetary_computer(auto_sign=True)
+
+   # Search for data
    results = pc.search(
        collections=["sentinel-2-l2a"],
        bbox=[-122.5, 47.5, -122.0, 48.0],
        datetime="2024-01-01/2024-03-31"
    )
-   
+
    # Get ready-to-use URLs
-   items = results.get_all_items()
-   blue_url = items[0].get_asset_url('B02')  # Automatically signed!
-   
+   item = results.get_all_items()[0]
+   blue_url = item.get_asset_url('B02')  # Automatically signed!
+
    # Use with ANY raster package
    import rioxarray
    data = rioxarray.open_rasterio(blue_url)
 
-Table of Contents
------------------
+Documentation Sections
+----------------------
 
 .. toctree::
    :maxdepth: 2
-   :caption: Getting Started
+   :caption: 🚀 Getting Started
 
-   installation
-   quickstart
-
-.. toctree::
-   :maxdepth: 2
-   :caption: User Guide
-
-   user-guide/index
-   user-guide/basic-usage
-   user-guide/advanced-usage
-   user-guide/planetary-computer
-   user-guide/earthsearch
+   sections/getting-started/index
+   sections/getting-started/installation
+   sections/getting-started/quickstart
+   sections/getting-started/configuration
+   sections/getting-started/first-steps
 
 .. toctree::
    :maxdepth: 2
-   :caption: Examples
+   :caption: 💡 Examples & Tutorials
 
-   examples/index
-   examples/basic-examples
-   examples/advanced-examples
+   sections/examples/index
+   sections/examples/basic-workflows
+   sections/examples/advanced-workflows
+   sections/examples/real-world-examples
+   sections/examples/integration-examples
+   sections/examples/notebooks/index
 
 .. toctree::
    :maxdepth: 2
-   :caption: API Reference
+   :caption: 📚 API Reference
 
-   api/index
-   api/clients
-   api/core
-   api/utilities
+   sections/api-reference/index
+   sections/api-reference/core-classes
+   sections/api-reference/client-classes
+   sections/api-reference/utility-functions
+   sections/api-reference/factory-functions
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Development
+   :maxdepth: 2
+   :caption: 🖥️ CLI Reference
 
-   contributing
-   changelog
-   license
+   sections/cli-reference/index
+   sections/cli-reference/collections
+   sections/cli-reference/search
+   sections/cli-reference/items
+   sections/cli-reference/download
+   sections/cli-reference/utils
+   sections/cli-reference/workflows
 
-Indices and tables
+.. toctree::
+   :maxdepth: 2
+   :caption: ❓ FAQ & Help
+
+   sections/faq/index
+   sections/faq/general
+   sections/faq/installation
+   sections/faq/usage
+   sections/faq/troubleshooting
+   sections/faq/performance
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 🔧 Development
+
+   sections/development/index
+   sections/development/contributing
+   sections/development/architecture
+   sections/development/testing
+   sections/development/changelog
+   sections/development/license
+
+Philosophy
+----------
+
+🎯 **Core Focus**: We provide URLs - you choose how to read them!  
+📦 **Use Any Package**: rioxarray, rasterio, GDAL, or any package you prefer  
+🚀 **Maximum Flexibility**: Zero restrictions on your workflow  
+
+Perfect for researchers, data scientists, and developers working with satellite imagery and geospatial analysis.
+
+Community & Support
+-------------------
+
+- **GitHub Repository**: `open-geodata-api <https://github.com/Mirjan-Ali-Sha/open-geodata-api>`_
+- **Issue Tracker**: `Report Bugs <https://github.com/Mirjan-Ali-Sha/open-geodata-api/issues>`_
+- **Documentation**: `Read the Docs <https://open-geodata-api.readthedocs.io>`_
+
+Indices and Tables
 ------------------
 
 * :ref:`genindex`
-* :ref:`modindex`
+* :ref:`modindex`  
 * :ref:`search`
