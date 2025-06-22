@@ -27,23 +27,23 @@
 
 ### Key Features
 
-✅ **Unified Access**: Single interface for multiple geospatial APIs
-✅ **Automatic URL Management**: Handles signing (PC) and validation (ES) automatically
-✅ **Maximum Flexibility**: Use any raster reading package you prefer
-✅ **Zero Lock-in**: No forced dependencies or reading methods
-✅ **Clean API**: Intuitive, Pythonic interface
+✅ **Unified Access**: Single interface for multiple geospatial APIs<br>
+✅ **Automatic URL Management**: Handles signing (PC) and validation (ES) automatically<br>
+✅ **Maximum Flexibility**: Use any raster reading package you prefer<br>
+✅ **Zero Lock-in**: No forced dependencies or reading methods<br>
+✅ **Clean API**: Intuitive, Pythonic interface<br>
 ✅ **Production Ready**: Robust error handling and comprehensive testing
 
 ### Key Features of Extra Utils Functions
-✅ **Intelligent Input Detection** - Automatically handles URLs, dicts, items, seasonal data
-✅ **Automatic URL Management** - Re-signs expired URLs with warnings
-✅ **Flexible Destinations** - File, directory, or auto-naming support
-✅ **Progress Tracking** - Visual progress bars for downloads
-✅ **Organized Structure** - Creates logical folder hierarchies
-✅ **Error Handling** - Robust error handling with partial download support
-✅ **Provider Awareness** - Handles PC signing and ES validation
-✅ **Batch Processing** - Efficient handling of multiple files
-✅ **Summary Reports** - Detailed download statistics
+✅ **Intelligent Input Detection** - Automatically handles URLs, dicts, items, seasonal data<br>
+✅ **Automatic URL Management** - Re-signs expired URLs with warnings<br>
+✅ **Flexible Destinations** - File, directory, or auto-naming support<br>
+✅ **Progress Tracking** - Visual progress bars for downloads<br>
+✅ **Organized Structure** - Creates logical folder hierarchies<br>
+✅ **Error Handling** - Robust error handling with partial download support<br>
+✅ **Provider Awareness** - Handles PC signing and ES validation<br>
+✅ **Batch Processing** - Efficient handling of multiple files<br>
+✅ **Summary Reports** - Detailed download statistics<br>
 
 ### Key Help Features Added to CLI
 ✅ **Automatic -h and --help** - Click provides these automatically
@@ -1343,19 +1343,388 @@ print(f"Check your './data/' directory for downloaded files")
 Open Geodata API provides a comprehensive CLI for satellite data discovery, filtering, and downloading. After installation, use the `ogapi` command to access all functionality.
 
 #### Show package information
-<br>`ogapi info`<br>
+```cli
+ogapi info
+```
 
 #### Get help for any command
-```python
+```cli
 ogapi --help
+```
+```cli
 ogapi collections --help
+```
+```cli
 ogapi search items --help
 ```
-#### Collections Management
-##### List all collections from both providers
-`ogapi collections list`
+### Collections Management
+#### List all collections from both providers
+```cli
+ogapi collections list
+```
+#### List from specific provider
+```cli
+ogapi collections list --provider pc
+```
+```cli
+ogapi collections list --provider es
+```
 
+#### Filter collections by keyword
+```cli
+ogapi collections list --filter sentinel
+```
 
+#### Save results to file
+```cli
+ogapi collections list --output collections.json
+```
+
+### Search Collections
+#### Find collections by keyword
+```cli
+ogapi collections search sentinel
+```
+```cli
+ogapi collections search landsat --provider pc
+```
+```cli
+ogapi collections search modis --provider both
+```
+
+### Get Collection Information
+#### Get detailed collection info
+```cli
+ogapi collections info sentinel-2-l2a
+```
+```cli
+ogapi collections info sentinel-2-l2a --provider es
+```
+```cli
+ogapi collections info landsat-c2-l2 --output collection_info.json
+```
+
+### Data Search
+#### Search for Sentinel-2 data in Seattle area
+```cli
+ogapi search items --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --datetime "2024-06-01/2024-08-31" --limit 10
+```
+
+#### Search with cloud cover filter
+```cli
+ogapi search items --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --cloud-cover 20 --output search_results.json
+```
+
+#### Search multiple collections
+```cli
+ogapi search items --collections "sentinel-2-l2a,landsat-c2-l2" --bbox "-120.0,35.0,-119.0,36.0" --datetime "2024-01-01/2024-12-31"
+```
+#### Advanced Search with JSON Query
+```cli
+ogapi search items --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --query '{"eo:cloud_cover":{"lt":15},"platform":{"eq":"sentinel-2a"}}' --output advanced_search.json
+```
+
+#### Find recent clear data (last 30 days)
+```cli
+ogapi search quick sentinel-2-l2a "-122.5,47.5,-122.0,48.0"
+```
+
+#### Customize time range and cloud threshold
+```cli
+ogapi search quick sentinel-2-l2a "-122.5,47.5,-122.0,48.0" --days 7 --cloud-cover 10 --limit 5
+```
+
+#### Save results for later processing
+```cli
+ogapi search quick landsat-c2-l2 "-120.0,35.0,-119.0,36.0" --output recent_landsat.json
+```
+
+### Compare Data Availability Between Providers
+#### Compare Sentinel-2 availability
+```cli
+ogapi search compare --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --datetime "2024-06-01/2024-08-31"
+```
+#### Compare with cloud filtering
+```cli
+ogapi search compare --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --cloud-cover 25 --output comparison_results.json
+```
+
+### Working with Items
+#### Show info for first item in search results
+```cli
+ogapi items info search_results.json
+```
+#### Show info for specific item by index
+```cli
+ogapi items info search_results.json --item-index 2
+```
+#### Show detailed metadata
+```cli
+ogapi items info search_results.json --show-all --output item_details.json
+```
+#### List all assets for an item
+```cli
+ogapi items assets search_results.json
+```
+#### Filter assets by pattern
+```cli
+ogapi items assets search_results.json --type "image/tiff"
+```
+#### Show URLs for assets
+```cli
+ogapi items assets search_results.json --show-urls
+```
+#### Get URLs for RGB bands
+```cli
+ogapi items urls search_results.json --assets "B04,B03,B02"
+```
+#### Get all asset URLs
+```cli
+ogapi items urls search_results.json --output all_urls.json
+```
+#### Get URLs by pattern
+```cli
+ogapi items urls search_results.json --pattern "B0" --output optical_bands.json
+```
+#### Get unsigned URLs
+```cli
+ogapi items urls search_results.json --unsigned
+```
+### Compare Items by Quality
+#### Compare items by cloud cover (find clearest)
+```cli
+ogapi items compare search_results.json
+```
+#### Compare by date (find most recent)
+```cli
+ogapi items compare search_results.json --metric date
+```
+#### Compare asset availability
+```cli
+ogapi items compare search_results.json --metric assets --max-items 10
+```
+### Data Download
+#### Download all assets from search results
+```cli
+ogapi download search-results search_results.json
+```
+#### Download specific bands only
+```cli
+ogapi download search-results search_results.json --assets "B04,B03,B02" --destination "./rgb_data/"
+```
+#### Download with additional filtering
+```cli
+ogapi download search-results search_results.json --cloud-cover 15 --max-items 5 --assets "B08,B04"
+```
+#### Create flat file structure
+```cli
+ogapi download search-results search_results.json --flat-structure --destination "./satellite_data/
+```
+#### Download single file
+```cli
+ogapi download url "https://example.com/sentinel2_B04.tif"
+```
+#### Download to specific location
+```cli
+ogapi download url "https://example.com/B04.tif" --destination "./data/red_band.tif"
+```
+#### Download with provider specification (it will handdle url validation)
+```cli
+ogapi download url "https://pc.example.com/B04.tif" --provider pc
+```
+#### Download from exported URLs
+```cli
+ogapi download urls-json exported_urls.json
+```
+#### Custom destination
+```cli
+ogapi download urls-json urls.json --destination "./downloads/" --flat-structure
+```
+#### Download all seasons from seasonal JSON
+```cli
+ogapi download seasonal seasonal_data.json
+```
+#### Download specific seasons and assets
+```cli
+ogapi download seasonal seasonal_data.json --seasons "spring,summer" --assets "B08,B04" --destination "./time_series/"
+```
+### Filter by Cloud Cover
+#### Filter search results by cloud cover
+```cli
+ogapi utils filter-clouds search_results.json --max-cloud-cover 20
+```
+#### Filter and save results
+```cli
+ogapi utils filter-clouds search_results.json --max-cloud-cover 15 --output clear_results.json --show-stats
+```
+### Export URLs
+#### Export all URLs from search results
+```cli
+ogapi utils export-urls search_results.json --output all_urls.json
+```
+#### Export specific assets
+```cli
+ogapi utils export-urls search_results.json --output rgb_urls.json --assets "B04,B03,B02"
+```
+#### Export in simple format
+```cli
+ogapi utils export-urls search_results.json --output simple_urls.json --format simple
+```
+#### Export unsigned URLs
+```cli
+ogapi utils export-urls search_results.json --output unsigned_urls.json --unsigned
+```
+### Validate URLs
+#### Basic URL validation
+```cli
+ogapi utils validate-urls urls.json
+```
+#### Check accessibility (HTTP requests)
+```cli
+ogapi utils validate-urls urls.json --check-access
+```
+#### Fix expired URLs
+```cli
+ogapi utils validate-urls urls.json --fix-expired --output fixed_urls.json
+```
+#### Skip expiry check for speed
+```cli
+ogapi utils validate-urls urls.json --no-check-expiry
+```
+### Analyze Search Results
+#### Analyze cloud cover distribution
+```cli
+ogapi utils analyze search_results.json
+```
+#### Temporal analysis
+```cli
+ogapi utils analyze search_results.json --metric temporal
+```
+#### Asset availability analysis
+```cli
+ogapi utils analyze search_results.json --metric assets --output analysis_report.json
+```
+### Create Download Summaries
+#### Create detailed download summary
+```cli
+ogapi utils download-summary download_results.json
+```
+#### Brief summary
+```cli
+ogapi utils download-summary results.json --format brief
+```
+#### Save summary report
+```cli
+ogapi utils download-summary results.json --output report.json
+```
+### Complete Workflow Examples
+#### 1.1: Search for data (Basic RGB Download Workflow)
+```cli
+ogapi search items --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --datetime "2024-06-01/2024-08-31" --cloud-cover 20 --output search_results.json
+```
+#### 1.2: Filter for very clear imagery
+```cli
+ogapi utils filter-clouds search_results.json --max-cloud-cover 10 --output clear_results.json
+```
+#### 1.3: Download RGB bands
+```cli
+ogapi download search-results clear_results.json --assets "B04,B03,B02" --destination "./rgb_analysis/"
+```
+#### 1.4: Create summary
+```cli
+ogapi utils download-summary download_results.json
+```
+#### 2.1: Search for data (NDVI Analysis Workflow)
+```cli
+ogapi search items --collections sentinel-2-l2a --bbox "-120.0,35.0,-119.0,36.0" --datetime "2024-01-01/2024-12-31" --cloud-cover 25 --output yearly_search.json
+```
+#### 2.2: Filter by seasons and export URLs
+```cli
+ogapi utils filter-clouds yearly_search.json --max-cloud-cover 15 --output clear_yearly.json
+```
+```cli
+ogapi utils export-urls clear_yearly.json --assets "B08,B04" --output ndvi_urls.json
+```
+#### 2.3: Download NDVI bands
+```cli
+ogapi download urls-json ndvi_urls.json --destination "./ndvi_analysis/"
+```
+#### 3.1 Compare data availability (Multi-Provider Comparison)
+```cli
+ogapi search compare --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --datetime "2024-06-01/2024-08-31" --output comparison.json
+```
+#### 3.2 Search both providers separately
+```cli
+ogapi search items --provider pc --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --cloud-cover 20 --output pc_results.json
+```
+```cli
+ogapi search items --provider es --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --cloud-cover 20 --output es_results.json
+```
+#### 3.3 Download from best provider
+```cli
+ogapi download search-results pc_results.json --max-items 3 --destination "./pc_data/"
+```
+#### 4.1 Search and analyze (Quality Assessment Workflow) 
+```cli
+ogapi search items --collections sentinel-2-l2a --bbox "-122.5,47.5,-122.0,48.0" --limit 50 --output large_search.json
+```
+#### 4.2 Analyze data quality 
+```cli
+ogapi utils analyze large_search.json --metric cloud_cover
+```
+```cli
+ogapi utils analyze large_search.json --metric temporal
+```
+```cli
+ogapi utils analyze large_search.json --metric assets
+```
+#### 4.3 Compare individual items
+```cli
+ogapi items compare large_search.json --metric cloud_cover
+```
+#### 4.4 Download best items only
+```cli
+ogapi utils filter-clouds large_search.json --max-cloud-cover 10 --output best_quality.json
+```
+```cli
+ogapi download search-results best_quality.json --max-items 5
+```
+### Global Options
+**All commands support these global options:**
+#### Enable verbose output for debugging
+```cli
+ogapi --verbose [command]
+```
+#### Show version
+```cli
+ogapi --version
+```
+#### Get help for any command
+```cli
+ogapi [command] --help
+```
+```cli
+ogapi [command] [subcommand] --help
+```
+
+### Tips and Best Practices
+
+1. **Start Small**: Use `--limit` and `--max-items` to test workflows before large downloads
+2. **Save Results**: Always use `--output` to save search results for reprocessing
+3. **Filter Early**: Use cloud cover filters to reduce data volume
+4. **Check Status**: Use validation commands before large downloads
+5. **Resume Downloads**: Most download commands support resuming interrupted transfers
+6. **Use Verbose Mode**: Add `--verbose` for detailed debugging information
+
+### Environment Variables
+#### Optional: Set default provider
+```cli
+export OGAPI_DEFAULT_PROVIDER=pc
+```
+#### Optional: Set default destination
+```cli
+export OGAPI_DEFAULT_DEST=./satellite_data/
+```
 
 ## FAQ
 
