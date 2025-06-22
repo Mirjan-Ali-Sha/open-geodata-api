@@ -7,18 +7,18 @@
 ## Table of Contents
 
 1. [Introduction](README.md#introduction)
-*. [Open Geodata API - Complete Tool Summary] (README.md#open-geodata-api--complete-tool-summary)
-2. [Installation](README.md#installation)
-3. [Quick Start](README.md#quick-start)
-4. [Core Concepts](README.md#core-concepts)
-5. [API Reference](README.md#api-reference)
-6. [Usage Examples](README.md#usage-examples)
-7. [Best Practices](README.md#best-practices)
-8. [Troubleshooting](README.md#troubleshooting)
-9. [Advanced Usage](README.md#advanced-usage)
-10. [Utility Functions](README.md#utils-functions)
-11. [CLI Usage](README.md#cli-usage)
-12. [FAQ](README.md#faq)
+2. [Open Geodata API - Complete Tool Summary](README.md#open-geodata-api---complete-tool-summary)
+3. [Installation](README.md#installation)
+4. [Quick Start](README.md#quick-start)
+5. [Core Concepts](README.md#core-concepts)
+6. [API Reference](README.md#api-reference)
+7. [Usage Examples](README.md#usage-examples)
+8. [Best Practices](README.md#best-practices)
+9. [Troubleshooting](README.md#troubleshooting)
+10. [Advanced Usage](README.md#advanced-usage)
+11. [Utility Functions](README.md#utils-functions)
+12. [CLI Usage](README.md#cli-usage)
+13. [FAQ](README.md#faq)
 
 ## Introduction
 
