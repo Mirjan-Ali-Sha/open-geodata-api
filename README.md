@@ -55,8 +55,8 @@
 
 ### Philosophy
 
-🎯 **Core Focus**: We provide URLs - you choose how to read them!
-📦 **Use Any Package**: rioxarray, rasterio, GDAL, or any package you prefer
+🎯 **Core Focus**: We provide URLs - you choose how to read them!<br>
+📦 **Use Any Package**: rioxarray, rasterio, GDAL, or any package you prefer<br>
 🚀 **Maximum Flexibility**: Zero restrictions on your workflow
 
 ## Installation
