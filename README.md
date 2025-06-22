@@ -7,6 +7,7 @@
 ## Table of Contents
 
 1. [Introduction](README.md#introduction)
+*. [Open Geodata API - Complete Tool Summary] (README.md#open-geodata-api--complete-tool-summary)
 2. [Installation](README.md#installation)
 3. [Quick Start](README.md#quick-start)
 4. [Core Concepts](README.md#core-concepts)
@@ -25,7 +26,7 @@
 
 **Open Geodata API** is a unified Python client library that provides seamless access to multiple open geospatial data APIs. It focuses on **API access, search, and URL management** while maintaining maximum flexibility for data reading and processing.
 
-### Open Geodata API - Complete Tool Summary
+## Open Geodata API - Complete Tool Summary
 
 **🛰️ Unified Python Client for Satellite Data Access**
 
