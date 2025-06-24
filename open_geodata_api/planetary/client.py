@@ -1,25 +1,31 @@
 """
-Planetary Computer client with unified interface
+Planetary Computer client with silent 3-tier fallback strategy
 """
-
 import requests
-from datetime import datetime, timedelta
+import warnings
 from typing import Dict, List, Optional, Union, Any
 from ..core.base_client import BaseSTACClient
 from ..core.search import STACSearch
 
+try:
+    import pystac_client
+    import planetary_computer
+    PYSTAC_AVAILABLE = True
+except ImportError:
+    PYSTAC_AVAILABLE = False
+
 class PlanetaryComputerCollections(BaseSTACClient):
-    """Planetary Computer client with enhanced pagination."""
+    """Planetary Computer client with silent 3-tier fallback strategy."""
 
     def __init__(self, auto_sign: bool = False, verbose: bool = False):
+        self.auto_sign = auto_sign
         super().__init__(
             base_url="https://planetarycomputer.microsoft.com/api/stac/v1",
             provider_name="planetary_computer",
             verbose=verbose
         )
-        self.auto_sign = auto_sign
 
-    def search(self,
+    def search(self, 
                collections: Optional[List[str]] = None,
                intersects: Optional[Dict] = None,
                bbox: Optional[List[float]] = None,
@@ -27,8 +33,8 @@ class PlanetaryComputerCollections(BaseSTACClient):
                query: Optional[Dict] = None,
                limit: Optional[int] = None,
                max_items: Optional[int] = None) -> STACSearch:
-        """🔥 UNIFIED SEARCH - Gets ALL items by default, not just 100!"""
-
+        """🔄 Search with silent 3-tier fallback: Simple → pystac-client → chunking."""
+        
         if collections:
             invalid_collections = [col for col in collections if col not in self.collections]
             if invalid_collections:
@@ -39,175 +45,87 @@ class PlanetaryComputerCollections(BaseSTACClient):
         )
 
         try:
-            # For unlimited searches, get ALL items using pagination
-            if limit is None or limit == 0:
-                all_items = self._get_all_items_pagination(search_payload, max_items)
-                if not self.verbose:
-                    print(f"✅ Retrieved {len(all_items)} total items")
-                
-                return STACSearch({
-                    "items": all_items,
-                    "total_returned": len(all_items),
-                    "search_params": search_payload,
-                    "collections_searched": collections or "all",
-                    "method_used": "planetary_computer_pagination",
-                    "all_items_cached": True
-                }, provider="planetary_computer", client_instance=self, original_search_params=search_payload)
-            else:
-                # Limited search
-                search_payload["limit"] = min(limit, 10000)
-                return self._search_single_page(search_payload, max_items)
+            # 🔄 TIER 1: Simple search (default preference)
+            if self.verbose:
+                print("🔄 Tier 1: Using simple search (default preference)...")
+            
+            simple_result = self._simple_search(search_payload, max_items)
+            
+            # Return with fallback capability
+            return STACSearch(
+                simple_result,
+                provider="planetary_computer",
+                client_instance=self,
+                original_search_params=search_payload,
+                search_url=self.search_url,
+                verbose=self.verbose  # Pass verbose setting
+            )
                 
         except Exception as e:
-            print(f"Search error: {e}")
+            if self.verbose:
+                print(f"❌ Simple search error: {e}")
             return STACSearch({"items": [], "total_returned": 0, "error": str(e)}, 
                             provider="planetary_computer")
 
-    def _get_all_items_pagination(self, search_params: Dict, max_items: Optional[int] = None) -> List[Dict]:
-        """Planetary Computer pagination using time-based chunking."""
+    def _simple_search(self, search_payload: Dict, max_items: Optional[int]) -> Dict:
+        """🔄 TIER 1: Silent simple search - first preference."""
         
-        if "datetime" in search_params and "/" in search_params["datetime"]:
-            return self._chunked_time_search(search_params, max_items)
-        else:
-            return self._chunked_spatial_search(search_params, max_items)
-
-    def _chunked_time_search(self, search_params: Dict, max_items: Optional[int] = None) -> List[Dict]:
-        """Break time range into chunks to bypass 100-item limit."""
-        
-        start_date_str, end_date_str = search_params["datetime"].split("/")
-        start_dt = datetime.fromisoformat(start_date_str.replace('Z', '+00:00'))
-        end_dt = datetime.fromisoformat(end_date_str.replace('Z', '+00:00'))
-        
-        all_items = []
-        chunk_days = 30
-        current_dt = start_dt
-        chunk_count = 0
+        # Use a reasonable limit for simple search
+        simple_payload = search_payload.copy()
+        simple_payload["limit"] = min(search_payload.get("limit", 100), 100)
         
         headers = {'Content-Type': 'application/json', 'Accept': 'application/geo+json'}
         
-        if self.verbose:
-            print(f"🔍 Fetching all items using time-based chunking...")
+        # 🔇 SUPPRESS WARNINGS for clean output
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            response = requests.post(self.search_url, json=simple_payload, headers=headers, timeout=30)
         
-        while current_dt < end_dt:
-            chunk_count += 1
-            chunk_end = min(current_dt + timedelta(days=chunk_days), end_dt)
-            chunk_datetime = f"{current_dt.strftime('%Y-%m-%dT%H:%M:%SZ')}/{chunk_end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
-            
-            chunk_payload = search_params.copy()
-            chunk_payload["datetime"] = chunk_datetime
-            chunk_payload["limit"] = 1000
-            
-            try:
-                response = requests.post(self.search_url, json=chunk_payload, headers=headers)
-                response.raise_for_status()
-                data = response.json()
-                
-                chunk_items = data.get("features", [])
-                all_items.extend(chunk_items)
-                
-                if self.verbose:
-                    print(f"   Chunk {chunk_count}: {len(chunk_items)} items (total: {len(all_items)})")
-                
-                if max_items and len(all_items) >= max_items:
-                    all_items = all_items[:max_items]
-                    break
-                    
-            except Exception as e:
-                if self.verbose:
-                    print(f"   Error in chunk {chunk_count}: {e}")
-            
-            current_dt = chunk_end
-        
-        return all_items
-
-    def _chunked_spatial_search(self, search_params: Dict, max_items: Optional[int] = None) -> List[Dict]:
-        """Break spatial area into chunks for non-date searches."""
-        
-        if "bbox" not in search_params:
-            return self._single_large_request(search_params, max_items)
-        
-        bbox = search_params["bbox"]
-        west, south, east, north = bbox
-        
-        mid_lon = (west + east) / 2
-        mid_lat = (south + north) / 2
-        
-        quadrants = [
-            [west, south, mid_lon, mid_lat],
-            [mid_lon, south, east, mid_lat],
-            [west, mid_lat, mid_lon, north],
-            [mid_lon, mid_lat, east, north]
-        ]
-        
-        all_items = []
-        headers = {'Content-Type': 'application/json', 'Accept': 'application/geo+json'}
-        
-        if self.verbose:
-            print(f"🔍 Fetching all items using spatial chunking...")
-        
-        for i, quad_bbox in enumerate(quadrants):
-            quad_payload = search_params.copy()
-            quad_payload["bbox"] = quad_bbox
-            quad_payload["limit"] = 1000
-            
-            try:
-                response = requests.post(self.search_url, json=quad_payload, headers=headers)
-                response.raise_for_status()
-                data = response.json()
-                
-                quad_items = data.get("features", [])
-                existing_ids = {item.get('id') for item in all_items}
-                new_items = [item for item in quad_items if item.get('id') not in existing_ids]
-                
-                all_items.extend(new_items)
-                
-                if self.verbose:
-                    print(f"   Quadrant {i+1}: {len(new_items)} new items (total: {len(all_items)})")
-                
-                if max_items and len(all_items) >= max_items:
-                    all_items = all_items[:max_items]
-                    break
-                    
-            except Exception as e:
-                if self.verbose:
-                    print(f"   Error in quadrant {i+1}: {e}")
-        
-        return all_items
-
-    def _single_large_request(self, search_params: Dict, max_items: Optional[int] = None) -> List[Dict]:
-        """Fallback: single large request."""
-        headers = {'Content-Type': 'application/json', 'Accept': 'application/geo+json'}
-        
-        large_payload = search_params.copy()
-        large_payload["limit"] = max_items or 10000
-        
-        try:
-            response = requests.post(self.search_url, json=large_payload, headers=headers)
-            response.raise_for_status()
-            data = response.json()
-            return data.get("features", [])
-        except Exception as e:
-            if self.verbose:
-                print(f"Single request failed: {e}")
-            return []
-
-    def _search_single_page(self, search_payload: Dict, max_items: Optional[int]) -> STACSearch:
-        """Search with specified limit (single page)."""
-        headers = {'Content-Type': 'application/json', 'Accept': 'application/geo+json'}
-        
-        response = requests.post(self.search_url, json=search_payload, headers=headers)
         response.raise_for_status()
         data = response.json()
         
         items = data.get("features", [])
         
+        # Sign items if needed
+        if self.auto_sign and PYSTAC_AVAILABLE:
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    signed_items = []
+                    for item in items:
+                        signed_item = planetary_computer.sign(item)
+                        signed_items.append(signed_item)
+                    items = signed_items
+            except Exception as e:
+                if self.verbose:
+                    print(f"⚠️ Auto-signing failed: {e}")
+        
         if max_items and len(items) > max_items:
             items = items[:max_items]
         
-        return STACSearch({
+        if self.verbose:
+            print(f"   ✅ Simple search: {len(items)} items")
+        
+        return {
             "items": items,
             "total_returned": len(items),
             "search_params": search_payload,
             "collections_searched": search_payload.get("collections", "all"),
-            "method_used": "single_page"
-        }, provider="planetary_computer")
+            "method_used": "simple_search"
+        }
+
+    def _create_pystac_catalog_fallback(self):
+        """🔄 TIER 2: Silent pystac-client catalog creation."""
+        
+        if not PYSTAC_AVAILABLE:
+            return None
+        
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                modifier = planetary_computer.sign_inplace if self.auto_sign else None
+                return pystac_client.Client.open(self.base_url, modifier=modifier)
+        except Exception as e:
+            if self.verbose:
+                print(f"   ⚠️ pystac-client catalog creation failed: {e}")
+            return None

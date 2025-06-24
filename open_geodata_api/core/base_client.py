@@ -1,15 +1,23 @@
 """
-Base client class with shared functionality for all STAC providers
+Base client with silent 3-tier fallback strategy
 """
 
 import requests
+import warnings
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Union, Any
-from abc import ABC, abstractmethod  # ✅ FIXED: Import ABC from abc, not typing
+from abc import ABC, abstractmethod
 from ..core.search import STACSearch
 
+try:
+    import pystac_client
+    import planetary_computer
+    PYSTAC_AVAILABLE = True
+except ImportError:
+    PYSTAC_AVAILABLE = False
+
 class BaseSTACClient(ABC):
-    """Abstract base class for all STAC API clients."""
+    """Abstract base class with silent 3-tier fallback strategy."""
     
     def __init__(self, base_url: str, provider_name: str, verbose: bool = False):
         self.base_url = base_url
@@ -123,9 +131,93 @@ class BaseSTACClient(ABC):
         pass
 
     @abstractmethod
-    def _get_all_items_pagination(self, search_params: Dict, max_items: Optional[int] = None) -> List[Dict]:
-        """Abstract pagination method to be implemented by each provider."""
+    def _create_pystac_catalog_fallback(self):
+        """Create pystac-client catalog for fallback strategy."""
         pass
+
+    def _fallback_chunking_search(self, search_params: Dict, search_url: str = None, verbose: bool = False) -> List[Dict]:
+        """🔄 FALLBACK TIER 3: Own chunking implementation (silent)."""
+        
+        if not search_url:
+            search_url = self.search_url
+        
+        # Simple time-based chunking strategy
+        if "datetime" in search_params and "/" in search_params["datetime"]:
+            return self._chunked_time_search(search_params, search_url, verbose)
+        else:
+            return self._simple_pagination_fallback(search_params, search_url, verbose)
+
+    def _chunked_time_search(self, search_params: Dict, search_url: str, verbose: bool = False) -> List[Dict]:
+        """Silent time-based chunking for fallback."""
+        
+        start_date_str, end_date_str = search_params["datetime"].split("/")
+        start_dt = datetime.fromisoformat(start_date_str.replace('Z', '+00:00'))
+        end_dt = datetime.fromisoformat(end_date_str.replace('Z', '+00:00'))
+        
+        all_items = []
+        chunk_days = 30  # Conservative chunk size
+        current_dt = start_dt
+        
+        headers = {'Content-Type': 'application/json', 'Accept': 'application/geo+json'}
+        
+        while current_dt < end_dt:
+            chunk_end = min(current_dt + timedelta(days=chunk_days), end_dt)
+            chunk_datetime = f"{current_dt.strftime('%Y-%m-%dT%H:%M:%SZ')}/{chunk_end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+            
+            chunk_params = search_params.copy()
+            chunk_params["datetime"] = chunk_datetime
+            chunk_params["limit"] = 100
+            
+            try:
+                response = requests.post(search_url, json=chunk_params, headers=headers, timeout=30)
+                response.raise_for_status()
+                data = response.json()
+                
+                chunk_items = data.get('features', data.get('items', []))
+                all_items.extend(chunk_items)
+                
+                if verbose:
+                    print(f"   📅 Chunk {current_dt.strftime('%Y-%m-%d')}: {len(chunk_items)} items")
+                    
+            except Exception as e:
+                if verbose:
+                    print(f"   ⚠️ Chunk failed: {e}")
+            
+            current_dt = chunk_end
+        
+        return all_items
+
+    def _simple_pagination_fallback(self, search_params: Dict, search_url: str, verbose: bool = False) -> List[Dict]:
+        """Silent pagination for non-time searches."""
+        
+        all_items = []
+        headers = {'Content-Type': 'application/json', 'Accept': 'application/geo+json'}
+        page_params = {**search_params, "limit": 100}
+        
+        for page in range(10):  # Max 10 pages for safety
+            try:
+                response = requests.post(search_url, json=page_params, headers=headers, timeout=30)
+                response.raise_for_status()
+                data = response.json()
+                
+                page_items = data.get('features', data.get('items', []))
+                if not page_items:
+                    break
+                
+                all_items.extend(page_items)
+                
+                # Simple offset-based pagination
+                page_params = {**search_params, "limit": 100, "offset": len(all_items)}
+                
+                if verbose:
+                    print(f"   📄 Page {page + 1}: {len(page_items)} items")
+                
+            except Exception as e:
+                if verbose:
+                    print(f"   ⚠️ Page {page + 1} failed: {e}")
+                break
+        
+        return all_items
 
     def create_bbox_from_center(self, lat: float, lon: float, buffer_km: float = 10) -> List[float]:
         """Create a bounding box around a center point."""
