@@ -23,13 +23,14 @@ from .earthsearch.validation import validate_url, validate_item, validate_asset_
 from .utils.filters import filter_by_cloud_cover
 
 # Factory functions
-def planetary_computer(auto_sign: bool = False):
-    """Create a Planetary Computer client."""
-    return PlanetaryComputerCollections(auto_sign=auto_sign)
+def planetary_computer(auto_sign: bool = False, verbose: bool = False):
+    """Create Planetary Computer client with enhanced pagination."""
+    return PlanetaryComputerCollections(auto_sign=auto_sign, verbose=verbose)
 
-def earth_search(auto_validate: bool = False):
-    """Create an EarthSearch client.""" 
-    return EarthSearchCollections(auto_validate=auto_validate)
+def earth_search(auto_validate: bool = False, verbose: bool = False):
+    """Create EarthSearch client with enhanced pagination."""
+    return EarthSearchCollections(auto_validate=auto_validate, verbose=verbose)
+
 
 def get_clients(pc_auto_sign: bool = False, es_auto_validate: bool = False):
     """Get both clients for unified access."""

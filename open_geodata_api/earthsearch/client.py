@@ -1,94 +1,68 @@
 """
-EarthSearch client implementation
+Enhanced EarthSearch client with 502 error handling and smaller chunks
 """
+
 import requests
+import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Union, Any, Tuple
+from ..core.base_client import BaseSTACClient
 from ..core.search import STACSearch
 
-class EarthSearchCollections:
-    """Element84 Earth Search STAC API client."""
+class EarthSearchCollections(BaseSTACClient):
+    """EarthSearch client with enhanced 502 error handling and smaller chunks."""
 
-    def __init__(self, auto_validate: bool = False):
-        self.base_url = "https://earth-search.aws.element84.com/v1"
-        self.search_url = f"{self.base_url}/search"
+    def __init__(self, auto_validate: bool = False, verbose: bool = False):
+        super().__init__(
+            base_url="https://earth-search.aws.element84.com/v1",
+            provider_name="earthsearch",
+            verbose=verbose
+        )
         self.auto_validate = auto_validate
-        self.collections = self._fetch_collections()
-        self._collection_details = {}
+        self.max_retries = 3
+        self.retry_delay = 2  # seconds
 
-    def _fetch_collections(self):
-        """Fetch all collections from the Element84 Earth Search STAC API."""
-        url = f"{self.base_url}/collections"
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-            data = response.json()
-            collections = data.get('collections', [])
-            return {col['id']: f"{self.base_url}/collections/{col['id']}" for col in collections}
-        except requests.RequestException as e:
-            print(f"Error fetching collections: {e}")
-            return {}
-
-    def list_collections(self):
-        """Return a list of all available collection names."""
-        return sorted(list(self.collections.keys()))
-
-    def search_collections(self, keyword):
-        """Search for collections containing a specific keyword."""
-        keyword = keyword.lower()
-        return [col for col in self.collections.keys() if keyword in col.lower()]
-
-    def get_collection_info(self, collection_name):
-        """Get detailed information about a specific collection."""
-        if collection_name not in self.collections:
-            return None
-
-        if collection_name not in self._collection_details:
+    def _make_request_with_retry(self, url, json_data=None, headers=None):
+        """Make request with retry logic for 502 errors."""
+        
+        for attempt in range(self.max_retries):
             try:
-                response = requests.get(self.collections[collection_name])
+                if json_data:
+                    response = requests.post(url, json=json_data, headers=headers, timeout=30)
+                else:
+                    response = requests.get(url, headers=headers, timeout=30)
+                
+                # Handle 502 specifically
+                if response.status_code == 502:
+                    if attempt < self.max_retries - 1:
+                        if self.verbose:
+                            print(f"   ⚠️ 502 error, retrying in {self.retry_delay}s (attempt {attempt + 1}/{self.max_retries})")
+                        time.sleep(self.retry_delay)
+                        continue
+                    else:
+                        raise requests.exceptions.HTTPError(f"502 Bad Gateway after {self.max_retries} attempts")
+                
                 response.raise_for_status()
-                self._collection_details[collection_name] = response.json()
-            except requests.RequestException as e:
-                print(f"Error fetching collection details: {e}")
-                return None
-
-        return self._collection_details[collection_name]
-
-    def _format_datetime_rfc3339(self, datetime_input: Union[str, datetime]) -> str:
-        """Convert various datetime formats to RFC3339 format."""
-        if not datetime_input:
-            return None
-
-        if isinstance(datetime_input, datetime):
-            return datetime_input.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-        datetime_str = str(datetime_input)
-
-        if 'T' in datetime_str and datetime_str.endswith('Z'):
-            return datetime_str
-
-        if '/' in datetime_str:
-            start_date, end_date = datetime_str.split('/')
-            
-            if 'T' not in start_date:
-                start_rfc3339 = f"{start_date}T00:00:00Z"
-            else:
-                start_rfc3339 = start_date if start_date.endswith('Z') else f"{start_date}Z"
-
-            if 'T' not in end_date:
-                end_rfc3339 = f"{end_date}T23:59:59Z"
-            else:
-                end_rfc3339 = end_date if end_date.endswith('Z') else f"{end_date}Z"
-
-            return f"{start_rfc3339}/{end_rfc3339}"
-
-        if 'T' not in datetime_str:
-            return f"{datetime_str}T00:00:00Z"
-
-        if not datetime_str.endswith('Z'):
-            return f"{datetime_str}Z"
-
-        return datetime_str
+                return response
+                
+            except requests.exceptions.Timeout:
+                if attempt < self.max_retries - 1:
+                    if self.verbose:
+                        print(f"   ⚠️ Timeout, retrying in {self.retry_delay}s (attempt {attempt + 1}/{self.max_retries})")
+                    time.sleep(self.retry_delay)
+                    continue
+                else:
+                    raise
+            except requests.exceptions.RequestException as e:
+                if "502" in str(e) and attempt < self.max_retries - 1:
+                    if self.verbose:
+                        print(f"   ⚠️ Server error, retrying in {self.retry_delay}s (attempt {attempt + 1}/{self.max_retries})")
+                    time.sleep(self.retry_delay)
+                    continue
+                else:
+                    raise
+        
+        return response
 
     def search(self,
                collections: Optional[List[str]] = None,
@@ -96,84 +70,318 @@ class EarthSearchCollections:
                bbox: Optional[List[float]] = None,
                datetime: Optional[Union[str, List[str], Tuple[str, str]]] = None,
                query: Optional[Dict] = None,
-               limit: int = 100,
+               limit: Optional[int] = None,
                max_items: Optional[int] = None) -> STACSearch:
-        """Search for products with Element84 Earth Search integration."""
-
-        search_payload = {}
+        """🔥 ENHANCED SEARCH for EarthSearch with 502 error handling."""
 
         if collections:
             invalid_collections = [col for col in collections if col not in self.collections]
             if invalid_collections:
                 raise ValueError(f"Invalid collections: {invalid_collections}")
-            search_payload["collections"] = collections
 
-        if intersects:
-            search_payload["intersects"] = intersects
+        # Handle tuple datetime format
+        if isinstance(datetime, tuple) and len(datetime) == 2:
+            start_date, end_date = datetime
+            datetime = f"{start_date}/{end_date}"
 
-        if bbox:
-            if len(bbox) != 4:
-                raise ValueError("bbox must be [west, south, east, north]")
-            search_payload["bbox"] = bbox
-
-        if datetime:
-            if isinstance(datetime, tuple) and len(datetime) == 2:
-                start_date, end_date = datetime
-                datetime_range = f"{start_date}/{end_date}"
-            elif isinstance(datetime, list):
-                datetime_range = "/".join(datetime)
-            else:
-                datetime_range = str(datetime)
-
-            formatted_datetime = self._format_datetime_rfc3339(datetime_range)
-            search_payload["datetime"] = formatted_datetime
-
-        if query:
-            search_payload["query"] = query
-
-        search_payload["limit"] = min(limit, 1000)
+        search_payload = self._build_search_payload(
+            collections, intersects, bbox, datetime, query, limit
+        )
 
         try:
-            headers = {
-                'Content-Type': 'application/json',
-                'Accept': 'application/geo+json'
-            }
+            # For unlimited searches, use enhanced chunking with 502 handling
+            if limit is None or limit == 0:
+                all_items = self._get_all_items_pagination(search_payload, max_items)
+                if not self.verbose and len(all_items) > 0:
+                    print(f"✅ Retrieved {len(all_items)} total items")
+                
+                return STACSearch({
+                    "items": all_items,
+                    "total_returned": len(all_items),
+                    "search_params": search_payload,
+                    "collections_searched": collections or "all",
+                    "method_used": "earthsearch_enhanced_pagination",
+                    "all_items_cached": True
+                }, provider="earthsearch", client_instance=self, original_search_params=search_payload)
+            else:
+                # Limited search with smaller chunks
+                search_payload["limit"] = min(limit, 100)  # Smaller limit for ES
+                return self._search_single_page(search_payload, max_items)
+                
+        except Exception as e:
+            # Better error handling for 502s
+            if "502" in str(e) or "Bad Gateway" in str(e):
+                print(f"❌ EarthSearch server overloaded (502 error). Try:")
+                print(f"   • Shorter time period (current: {search_payload.get('datetime', 'not specified')})")
+                print(f"   • Use Planetary Computer instead: -p pc")
+                print(f"   • Smaller area or stricter cloud cover filter")
+            else:
+                print(f"❌ Search error: {e}")
+            
+            return STACSearch({"items": [], "total_returned": 0, "error": str(e)}, 
+                            provider="earthsearch")
 
-            response = requests.post(self.search_url, json=search_payload, headers=headers)
-            response.raise_for_status()
+    def _get_all_items_pagination(self, search_payload: Dict, max_items: Optional[int] = None) -> List[Dict]:
+        """🔥 ENHANCED EarthSearch pagination with 502 error handling and smaller chunks."""
+        
+        # For large time ranges, use aggressive time-based chunking
+        if "datetime" in search_payload and "/" in search_payload["datetime"]:
+            return self._chunked_time_search_es(search_payload, max_items)
+        else:
+            return self._standard_pagination_es(search_payload, max_items)
+
+    def _chunked_time_search_es(self, search_params: Dict, max_items: Optional[int] = None) -> List[Dict]:
+        """🔥 AGGRESSIVE time-based chunking for EarthSearch to avoid 502s."""
+        
+        start_date_str, end_date_str = search_params["datetime"].split("/")
+        start_dt = datetime.fromisoformat(start_date_str.replace('Z', '+00:00'))
+        end_dt = datetime.fromisoformat(end_date_str.replace('Z', '+00:00'))
+        
+        # Calculate total days and determine chunk size
+        total_days = (end_dt - start_dt).days
+        
+        # 🔥 SMALLER CHUNKS for EarthSearch to prevent 502s
+        if total_days > 365:
+            chunk_days = 15  # Very small chunks for large ranges
+        elif total_days > 180:
+            chunk_days = 20  # Small chunks for medium ranges
+        else:
+            chunk_days = 30  # Standard chunks for small ranges
+        
+        all_items = []
+        current_dt = start_dt
+        chunk_count = 0
+        failed_chunks = 0
+        
+        headers = {'Content-Type': 'application/json', 'Accept': 'application/geo+json'}
+        
+        if self.verbose:
+            print(f"🔍 EarthSearch: Using {chunk_days}-day chunks for {total_days} total days...")
+        
+        while current_dt < end_dt:
+            chunk_count += 1
+            chunk_end = min(current_dt + timedelta(days=chunk_days), end_dt)
+            chunk_datetime = f"{current_dt.strftime('%Y-%m-%dT%H:%M:%SZ')}/{chunk_end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+            
+            chunk_params = search_params.copy()
+            chunk_params["datetime"] = chunk_datetime
+            chunk_params["limit"] = 50  # 🔥 VERY SMALL limit for EarthSearch
+            
+            try:
+                if self.verbose:
+                    print(f"   📅 Chunk {chunk_count}: {chunk_datetime[:10]} to {chunk_end.strftime('%Y-%m-%d')}")
+                
+                # Use retry logic for this chunk
+                response = self._make_request_with_retry(
+                    self.search_url, 
+                    json_data=chunk_params, 
+                    headers=headers
+                )
+                
+                data = response.json()
+                
+                if isinstance(data, dict) and 'features' in data:
+                    chunk_items = data.get("features", [])
+                elif isinstance(data, list):
+                    chunk_items = data
+                else:
+                    chunk_items = []
+                
+                all_items.extend(chunk_items)
+                
+                if self.verbose:
+                    print(f"   ✅ Chunk {chunk_count}: {len(chunk_items)} items (total: {len(all_items)})")
+                
+                if max_items and len(all_items) >= max_items:
+                    all_items = all_items[:max_items]
+                    break
+                    
+            except Exception as e:
+                failed_chunks += 1
+                if "502" in str(e) or "Bad Gateway" in str(e):
+                    if self.verbose:
+                        print(f"   ❌ Chunk {chunk_count}: 502 error, skipping")
+                    # Try with even smaller chunk for this time period
+                    if chunk_days > 7:
+                        smaller_chunks = self._try_smaller_chunk(search_params, current_dt, chunk_end, chunk_days // 2)
+                        all_items.extend(smaller_chunks)
+                else:
+                    if self.verbose:
+                        print(f"   ❌ Chunk {chunk_count}: {e}")
+            
+            current_dt = chunk_end
+            
+            # Add small delay to avoid overwhelming the server
+            time.sleep(0.5)
+        
+        if failed_chunks > 0:
+            print(f"⚠️ EarthSearch: {failed_chunks} chunks failed due to server issues")
+        
+        return all_items
+
+    def _try_smaller_chunk(self, search_params: Dict, start_dt: datetime, end_dt: datetime, smaller_days: int) -> List[Dict]:
+        """Try with smaller chunks when 502 errors occur."""
+        
+        items = []
+        current_dt = start_dt
+        headers = {'Content-Type': 'application/json', 'Accept': 'application/geo+json'}
+        
+        while current_dt < end_dt:
+            chunk_end = min(current_dt + timedelta(days=smaller_days), end_dt)
+            chunk_datetime = f"{current_dt.strftime('%Y-%m-%dT%H:%M:%SZ')}/{chunk_end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+            
+            chunk_params = search_params.copy()
+            chunk_params["datetime"] = chunk_datetime
+            chunk_params["limit"] = 25  # Even smaller limit
+            
+            try:
+                response = self._make_request_with_retry(
+                    self.search_url, 
+                    json_data=chunk_params, 
+                    headers=headers
+                )
+                
+                data = response.json()
+                
+                if isinstance(data, dict) and 'features' in data:
+                    chunk_items = data.get("features", [])
+                elif isinstance(data, list):
+                    chunk_items = data
+                else:
+                    chunk_items = []
+                
+                items.extend(chunk_items)
+                
+                if self.verbose:
+                    print(f"   🔧 Smaller chunk: {len(chunk_items)} items")
+                    
+            except Exception:
+                # Skip this smaller chunk if it still fails
+                if self.verbose:
+                    print(f"   🔧 Smaller chunk failed, skipping")
+                pass
+            
+            current_dt = chunk_end
+            time.sleep(0.3)  # Slower processing
+        
+        return items
+
+    def _standard_pagination_es(self, search_payload: Dict, max_items: Optional[int] = None) -> List[Dict]:
+        """Standard EarthSearch pagination with 502 handling."""
+        
+        all_items = []
+        page_limit = 50  # 🔥 SMALLER page size for EarthSearch
+        next_link = None
+        page_count = 0
+        
+        headers = {'Content-Type': 'application/json', 'Accept': 'application/geo+json'}
+        
+        if self.verbose:
+            print(f"🔍 EarthSearch: Using standard pagination with {page_limit} items per page...")
+        
+        while True:
+            page_count += 1
+            
+            try:
+                if next_link is None:
+                    # First request
+                    current_payload = {**search_payload, "limit": page_limit}
+                    response = self._make_request_with_retry(
+                        self.search_url, 
+                        json_data=current_payload, 
+                        headers=headers
+                    )
+                else:
+                    # Follow next link
+                    response = self._make_request_with_retry(next_link, headers=headers)
+                
+                data = response.json()
+                
+                # Get items from this page
+                if isinstance(data, dict) and 'features' in data:
+                    page_items = data.get("features", [])
+                elif isinstance(data, list):
+                    page_items = data
+                else:
+                    page_items = []
+                
+                if not page_items:
+                    break
+                
+                all_items.extend(page_items)
+                
+                if self.verbose:
+                    print(f"   📄 Page {page_count}: {len(page_items)} items (total: {len(all_items)})")
+                
+                # Check if we've reached max_items
+                if max_items and len(all_items) >= max_items:
+                    all_items = all_items[:max_items]
+                    break
+                
+                # Look for next link
+                next_link = None
+                if isinstance(data, dict):
+                    links = data.get("links", [])
+                    for link in links:
+                        if link.get("rel") == "next":
+                            next_link = link.get("href")
+                            break
+                
+                # If no next link, we're done
+                if not next_link:
+                    break
+                
+                # If we got fewer items than page_limit, we're likely done
+                if len(page_items) < page_limit:
+                    break
+                
+                # Add delay between pages
+                time.sleep(0.3)
+                
+            except Exception as e:
+                if "502" in str(e) or "Bad Gateway" in str(e):
+                    if self.verbose:
+                        print(f"   ❌ Page {page_count}: 502 error, stopping pagination")
+                    break
+                else:
+                    if self.verbose:
+                        print(f"   ❌ Page {page_count}: {e}")
+                    break
+        
+        return all_items
+
+    def _search_single_page(self, search_payload: Dict, max_items: Optional[int]) -> STACSearch:
+        """Search with specified limit using retry logic."""
+        
+        headers = {'Content-Type': 'application/json', 'Accept': 'application/geo+json'}
+        
+        try:
+            response = self._make_request_with_retry(
+                self.search_url, 
+                json_data=search_payload, 
+                headers=headers
+            )
             data = response.json()
-
+            
             if isinstance(data, dict) and 'features' in data:
                 items = data.get("features", [])
             elif isinstance(data, list):
                 items = data
             else:
                 items = []
-
+            
             if max_items and len(items) > max_items:
                 items = items[:max_items]
-
+            
             return STACSearch({
-                "features": items,
+                "items": items,
                 "total_returned": len(items),
                 "search_params": search_payload,
-                "collections_searched": collections or "all"
+                "collections_searched": search_payload.get("collections", "all"),
+                "method_used": "single_page_with_retry"
             }, provider="earthsearch")
-
-        except requests.RequestException as e:
-            print(f"Search error: {e}")
-            return STACSearch({"features": [], "total_returned": 0, "error": str(e)}, provider="earthsearch")
-
-    def create_bbox_from_center(self, lat: float, lon: float, buffer_km: float = 10) -> List[float]:
-        """Create a bounding box around a center point."""
-        buffer_deg = buffer_km / 111.0
-        return [lon - buffer_deg, lat - buffer_deg, lon + buffer_deg, lat + buffer_deg]
-
-    def create_geojson_polygon(self, coordinates: List[List[float]]) -> Dict:
-        """Create a GeoJSON polygon for area of interest."""
-        if coordinates[0] != coordinates[-1]:
-            coordinates.append(coordinates[0])
-        return {"type": "Polygon", "coordinates": [coordinates]}
-
-    def __repr__(self):
-        return f"EarthSearchCollections({len(self.collections)} collections available)"
+            
+        except Exception as e:
+            if "502" in str(e) or "Bad Gateway" in str(e):
+                print(f"❌ EarthSearch overloaded. Try: shorter time period or use -p pc")
+            raise e
