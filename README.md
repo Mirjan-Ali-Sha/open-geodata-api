@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./icon.png" alt="Open Geodata API Icon" width="150" height="150" />
+  <img src="https://github.com/Mirjan-Ali-Sha/open-geodata-api/blob/main/icon.png" alt="Open Geodata API Icon" width="150" height="150" />
 </p>
 
 # Open Geodata API - Complete User Guide

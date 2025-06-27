@@ -19,6 +19,7 @@ open_geodata_api/planetary/__pycache__/
 open_geodata_api/utils/__pycache__/
 *.egg-info/
 
+
 # PyInstaller
 *.manifest
 *.spec
@@ -48,6 +49,7 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+KT_Document.md
 db.sqlite3
 db.sqlite3-journal
 

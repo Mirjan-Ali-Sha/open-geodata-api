@@ -9,12 +9,13 @@ import time
 from pathlib import Path
 from typing import Union, Dict, List, Optional, Any
 from urllib.parse import urlparse, parse_qs
+from datetime import datetime, timedelta      
 import re
 from tqdm import tqdm
 
 
 def is_url_expired(url: str) -> bool:
-    """Check if a signed URL is expired by examining the 'se' parameter."""
+    """Check if a signed URL is expired by examining the 'se' parameter with 1 minute safe timer."""
     try:
         parsed = urlparse(url)
         query_params = parse_qs(parsed.query)
@@ -22,14 +23,17 @@ def is_url_expired(url: str) -> bool:
         if 'se' in query_params:
             expiry_time = query_params['se'][0]
             # Convert to timestamp and compare with current time
-            from datetime import datetime
             expiry_dt = datetime.fromisoformat(expiry_time.replace('Z', '+00:00'))
             current_dt = datetime.now(expiry_dt.tzinfo)
-            return current_dt >= expiry_dt
+            
+            # Declare expired if current time is >= expiry time minus 1 minute (safe timer)
+            safe_expiry_dt = expiry_dt - timedelta(seconds=30)
+            return current_dt >= safe_expiry_dt
         
         return False  # If no expiry parameter, assume not expired
     except Exception:
         return False
+
 
 
 def is_signed_url(url: str) -> bool:
