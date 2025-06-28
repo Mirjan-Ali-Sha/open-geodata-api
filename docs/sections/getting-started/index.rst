@@ -36,12 +36,12 @@ Open Geodata API is a unified Python client library that provides seamless acces
 
 **Key Features**:
 
-✅ **One Interface** - Access Microsoft Planetary Computer & AWS EarthSearch APIs  \
-✅ **Unified Search** - Search across multiple collections with a single query  \
-✅ **Automatic Signing** - Handles authentication and URL signing for you  \
-✅ **Smart URLs** - Automatic signing, validation, and expiration handling  \
-✅ **Your Choice** - Use any raster package (rioxarray, rasterio, GDAL)  \
-✅ **Complete Workflow** - Search → Filter → Download → Analyze
+- ✅ **One Interface** - Access Microsoft Planetary Computer & AWS EarthSearch APIs  
+- ✅ **Unified Search** - Search across multiple collections with a single query  
+- ✅ **Automatic Signing** - Handles authentication and URL signing for you  
+- ✅ **Smart URLs** - Automatic signing, validation, and expiration handling  
+- ✅ **Your Choice** - Use any raster package (rioxarray, rasterio, GDAL)  
+- ✅ **Complete Workflow** - Search → Filter → Download → Analyze
 
 **Philosophy**: We provide URLs - you choose how to read them!
 
