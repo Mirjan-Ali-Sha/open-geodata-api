@@ -49,10 +49,12 @@ Supported Data Sources
 ----------------------
 
 **Microsoft Planetary Computer**
-| - Comprehensive collection catalog
-| - Automatic URL signing
-| - High-performance access
-| - Requires authentication (free tier available)
+
+- Comprehensive collection catalog
+- Automatic URL signing
+- High-performance access
+- Requires authentication (free tier available)
+
 
 **Element84 EarthSearch**  
 - Open access (no authentication)
