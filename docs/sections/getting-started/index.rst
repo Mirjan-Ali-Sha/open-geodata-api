@@ -14,10 +14,10 @@ Welcome to Open Geodata API! This section will help you get up and running quick
 What You'll Learn
 -----------------
 
-📦 **Installation**: How to install the package and dependencies  
-⚡ **Quick Start**: Your first 5 minutes with the API  
-⚙️ **Configuration**: Setting up clients and authentication  
-🚀 **First Steps**: Understanding core concepts and workflows  
+| 📦 **Installation**: How to install the package and dependencies  
+| ⚡ **Quick Start**: Your first 5 minutes with the API  
+| ⚙️ **Configuration**: Setting up clients and authentication  
+| 🚀 **First Steps**: Understanding core concepts and workflows  
 
 Prerequisites
 -------------
