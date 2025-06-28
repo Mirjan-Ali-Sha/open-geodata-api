@@ -57,12 +57,16 @@ Supported Data Sources
 
 
 **Element84 EarthSearch**  
+
 - Open access (no authentication)
 - AWS-hosted data
 - Direct COG access
+- S3 CDN URLs (COG format for Datasets)
+- S3 bucket URLs (JP2 format for Sentinel Datasets)
 - Permanent URLs
 
 **Available Collections**:
+
 - Sentinel-2 (optical imagery, 10-60m resolution)
 - Landsat (long-term archive, 30m resolution)
 - MODIS (daily global coverage, 250m-1km resolution)
