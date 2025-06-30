@@ -17,7 +17,7 @@ except ImportError:
     PYSTAC_AVAILABLE = False
 
 class BaseSTACClient(ABC):
-    """Abstract base class with silent 3-tier fallback strategy."""
+    """Abstract base class with improved error handling."""
     
     def __init__(self, base_url: str, provider_name: str, verbose: bool = False):
         self.base_url = base_url
@@ -37,9 +37,12 @@ class BaseSTACClient(ABC):
             collections = data.get('collections', [])
             return {col['id']: f"{self.base_url}/collections/{col['id']}" for col in collections}
         except requests.RequestException as e:
-            if self.verbose:
+            # 🔥 FIXED: Better error handling for mocking
+            verbose = getattr(self, 'verbose', False)  # Safe attribute access
+            if verbose:
                 print(f"Error fetching collections: {e}")
             return {}
+
 
     def list_collections(self):
         """Return a list of all available collection names."""
