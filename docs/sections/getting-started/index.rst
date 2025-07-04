@@ -106,20 +106,23 @@ Learning Path
 -------------
 
 **For Beginners**:
-| 1. Start with :doc:`installation`
-| 2. Follow the :doc:`quickstart` guide
-| 3. Learn about :doc:`configuration`
-| 4. Practice with :doc:`first-steps`
+
+1. Start with :doc:`installation`
+2. Follow the :doc:`quickstart` guide
+3. Learn about :doc:`configuration`
+4. Practice with :doc:`first-steps`
 
 **For Experienced Users**:
-| 1. Quick :doc:`installation`
-| 2. Jump to :doc:`../examples/index` for advanced patterns
-| 3. Check :doc:`../api-reference/index` for detailed documentation
+
+1. Quick :doc:`installation`
+2. Jump to :doc:`../examples/index` for advanced patterns
+3. Check :doc:`../api-reference/index` for detailed documentation
 
 **For CLI Users**:
-| 1. Install the package
-| 2. Try: ``ogapi collections list``
-| 3. See :doc:`../cli-reference/index` for complete CLI documentation
+
+1. Install the package
+2. Try: ``ogapi collections list``
+3. See :doc:`../cli-reference/index` for complete CLI documentation
 
 Next Steps
 ----------
@@ -129,7 +132,7 @@ Ready to begin? Start with the installation guide!
 .. raw:: html
 
    <div class="next-steps">
-     <a href="installation.html" class="btn-primary">📦 Install Now</a>
+     <a href="installation.html" class="btn-primary">📦 Install Now</a><br>
      <a href="quickstart.html" class="btn-secondary">⚡ Quick Start</a>
    </div>
 
