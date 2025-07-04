@@ -117,9 +117,9 @@ Planetary Computer (PC) provides a comprehensive collection catalog with automat
     cloud_cover=30
     )
 
-   print(result)
-   print(f"PC Results: {len(result['planetary_computer'])} items")
-   print(f"ES Results: {len(result['earth_search'])} items")
+   print(f"Available Sections: {result.keys()}")
+   print(f"Results: {result['results']}")
+   print(f"Summary: {result['summary']}")
 
 Key Concepts
 ------------
