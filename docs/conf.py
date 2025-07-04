@@ -87,6 +87,7 @@ extensions = [
     'sphinx.ext.extlinks',
     'sphinx_rtd_theme',
     'myst_parser',  # For markdown support
+    'sphinx_copybutton',
 ]
 
 # Extension configuration
@@ -102,6 +103,9 @@ napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = False
 napoleon_include_private_with_doc = False
+copybutton_prompt_text = r">>> |\.\.\. |\$ "
+copybutton_prompt_is_regexp = True
+
 
 # Intersphinx mapping
 intersphinx_mapping = {
