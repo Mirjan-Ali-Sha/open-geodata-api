@@ -51,6 +51,9 @@ Step 1: Import and Setup
    # 2. Create clients
    pc = ogapi.planetary_computer(auto_sign=True)
    es = ogapi.earth_search()
+   
+   print(f"PC Collections: {pc.list_collections()}")
+   print(f"ES Collections: {es.list_collections()}")
 
 Step 2: Search for Data
 ~~~~~~~~~~~~~~~~~~~~~~~
