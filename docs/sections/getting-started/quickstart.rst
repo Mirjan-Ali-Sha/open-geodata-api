@@ -51,7 +51,7 @@ Step 1: Import and Setup
    # 2. Create clients
    pc = ogapi.planetary_computer(auto_sign=True)
    es = ogapi.earth_search()
-   
+
    print(f"PC Collections: {pc.list_collections()}")
    print(f"ES Collections: {es.list_collections()}")
 
@@ -89,6 +89,37 @@ Step 3: Work with Results
    # Get specific bands
    rgb_urls = item.get_band_urls(['B04', 'B03', 'B02'])  # Red, Green, Blue
    print(f"RGB URLs: {rgb_urls}")
+
+Compare Providers
+-----------------
+
+Both Planetary Computer and EarthSearch offer unique advantages depending on your use case.
+
+Planetary Computer (PC) provides a comprehensive collection catalog with automatic URL signing, while EarthSearch (ES) offers open access without authentication, making it easier for quick data retrieval.
+
+.. code-block:: python
+
+   import open_geodata_api as ogapi
+
+   # Compare last 500 days
+   result = ogapi.compare_providers(
+    collections=["sentinel-2-l2a"],
+    bbox=[-122.5, 47.5, -122.0, 48.0],
+    datetime=500,
+    cloud_cover=100
+    )
+    
+   # Compare specific date range
+   result = ogapi.compare_providers(
+    collections=["sentinel-2-l2a"],
+    bbox=[-122.5, 47.5, -122.0, 48.0],
+    datetime="2023-01-01/2023-12-31",
+    cloud_cover=30
+    )
+
+   print(result)
+   print(f"PC Results: {len(result['planetary_computer'])} items")
+   print(f"ES Results: {len(result['earth_search'])} items")
 
 Key Concepts
 ------------
