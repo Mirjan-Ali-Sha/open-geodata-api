@@ -928,7 +928,7 @@ download_seasonal_data
                 # Extract URLs from items
                 urls = {}
                 for item in season_items:
-                    urls[item.id] = item.get_asset_urls(['B08', 'B04'])
+                    urls[item.id] = item.get_band_urls(['B08', 'B04'])
                 
                 seasonal_data[season_name] = {
                     'count': len(season_items),
@@ -2271,7 +2271,7 @@ calculate_ndvi
     
     # Get band URLs from a STAC item
     item = items[0]  # First item from your collection
-    band_urls = item.get_asset_urls(['B08', 'B04'])  # NIR, Red
+    band_urls = item.get_band_urls(['B08', 'B04'])  # NIR, Red
     
     # Calculate NDVI
     ndvi = calculate_ndvi(
@@ -2301,7 +2301,7 @@ calculate_ndvi
                 print(f"🌱 Processing NDVI {i+1}/{len(items)}: {item.id}")
                 
                 # Get band URLs
-                band_urls = item.get_asset_urls(['B08', 'B04'])
+                band_urls = item.get_band_urls(['B08', 'B04'])
                 
                 # Calculate NDVI
                 output_file = os.path.join(output_dir, f"{item.id}_ndvi.tif")
@@ -2362,7 +2362,7 @@ calculate_ndvi
                     continue
                 
                 # Calculate NDVI
-                band_urls = item.get_asset_urls(['B08', 'B04'])
+                band_urls = item.get_band_urls(['B08', 'B04'])
                 
                 ndvi = calculate_ndvi(
                     nir_url=band_urls['B08'],
@@ -2491,7 +2491,7 @@ calculate_ndvi
             
             for item in season_items:
                 try:
-                    band_urls = item.get_asset_urls(['B08', 'B04'])
+                    band_urls = item.get_band_urls(['B08', 'B04'])
                     
                     ndvi = calculate_ndvi(
                         nir_url=band_urls['B08'],
@@ -2553,8 +2553,11 @@ get_statistics
     import rioxarray
     
     # Load raster data
-    data_url = item.get_asset_url('B04')  # Red band
+    data_url = item.get_asset_url('B04')  # Need fix, it will update on next release 0.2.5
     red_band = rioxarray.open_rasterio(data_url)
+    # Till the next release, you can use:
+    # data_url = item.get_band_urls(['B04'])
+    # red_band = rioxarray.open_rasterio(data_url['B04'])
     
     # Calculate comprehensive statistics
     stats = get_statistics(red_band)
