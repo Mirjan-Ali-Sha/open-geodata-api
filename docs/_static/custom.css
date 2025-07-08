@@ -1,19 +1,64 @@
 /* Enhanced custom styling for Open Geodata API documentation */
 
-/* Improved feature grid with better responsive behavior */
+/* 🔥 WIDER CONTENT LAYOUT - Utilize right-side space */
+.wy-nav-content-wrap {
+    margin-left: 300px; /* Keep sidebar width */
+    max-width: none; /* Remove max-width restriction */
+}
+
+.wy-nav-content {
+    max-width: none; /* Remove default max-width (usually 800px) */
+    padding: 1.618em 3em; /* Add more horizontal padding */
+}
+
+/* Alternative approach - if above doesn't work, try this */
+.wy-grid-for-nav {
+    position: relative;
+}
+
+.wy-nav-side {
+    width: 300px; /* Fixed sidebar width */
+}
+
+.wy-nav-content-wrap {
+    margin-left: 300px;
+    background: #fcfcfc;
+    min-width: 0; /* Allow content to shrink if needed */
+}
+
+/* Make content use full available width */
+.document {
+    max-width: none !important;
+    width: 100%;
+}
+
+.section {
+    max-width: none;
+}
+
+/* Adjust container for wider content */
+.container {
+    max-width: none;
+    width: 100%;
+    padding-left: 2em;
+    padding-right: 2em;
+}
+
+/* Enhanced feature grid with wider layout support */
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
-    margin: 24px 0;
-    padding: 0 8px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Slightly wider minimum */
+    gap: 32px; /* More gap for wider layout */
+    margin: 32px 0;
+    padding: 0 16px;
+    max-width: none; /* Remove any width restrictions */
 }
 
 .feature-box {
     background: #f8f9fa;
     border: 1px solid #e9ecef;
     border-radius: 12px;
-    padding: 24px;
+    padding: 28px; /* More padding for wider boxes */
     text-align: center;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -56,22 +101,25 @@
     color: #bdc3c7;
 }
 
-/* Code block enhancements */
+/* Code block enhancements with wider layout */
 .highlight {
     margin: 1em 0;
     border-radius: 6px;
     overflow: hidden;
+    max-width: none; /* Allow code blocks to use full width */
 }
 
 .highlight pre {
     border-radius: 6px;
+    padding: 1em 1.5em; /* More horizontal padding */
 }
 
-/* Enhanced admonition styling */
+/* Enhanced admonition styling for wider content */
 .admonition {
     border-radius: 8px;
     margin: 20px 0;
-    padding: 16px 20px;
+    padding: 20px 24px; /* More padding for wider layout */
+    max-width: none;
 }
 
 .admonition.tip {
@@ -98,21 +146,24 @@
     border-left: 4px solid #007bff;
 }
 
-/* API documentation enhancements */
+/* API documentation enhancements for wider layout */
 .api-section {
     margin: 24px 0;
-    padding: 20px;
+    padding: 24px 28px; /* More horizontal padding */
     background: #f8f9fa;
     border-radius: 8px;
     border-left: 4px solid #007bff;
+    max-width: none;
 }
 
 .method-signature {
     background: #f1f3f4;
-    padding: 12px 16px;
+    padding: 16px 20px; /* More padding */
     border-radius: 6px;
     font-family: 'Courier New', monospace;
     margin: 16px 0;
+    max-width: none;
+    overflow-x: auto; /* Handle long method signatures */
 }
 
 /* Navigation improvements */
@@ -124,15 +175,93 @@
     background-color: rgba(0,0,0,0.05);
 }
 
-/* Mobile responsiveness */
+/* Table improvements for wider content */
+table {
+    width: 100%;
+    max-width: none;
+    margin: 1em 0;
+}
+
+.wy-table-responsive table td,
+.wy-table-responsive table th {
+    white-space: normal; /* Allow text wrapping in wider tables */
+}
+
+/* Content sections with better spacing */
+.section {
+    margin-bottom: 2em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.75em;
+}
+
+/* Responsive behavior for wider layout */
+@media (min-width: 1200px) {
+    .wy-nav-content {
+        padding: 1.618em 4em; /* Even more padding on larger screens */
+    }
+    
+    .features-grid {
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 40px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .wy-nav-content-wrap {
+        margin-left: 300px; /* Keep sidebar */
+    }
+    
+    .wy-nav-content {
+        padding: 1.618em 2em;
+    }
+}
+
 @media (max-width: 768px) {
+    /* Mobile: sidebar becomes overlay, content uses full width */
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+    
+    .wy-nav-content {
+        padding: 1.618em 1em;
+    }
+    
     .features-grid {
         grid-template-columns: 1fr;
         gap: 16px;
         margin: 16px 0;
+        padding: 0 8px;
     }
     
     .feature-box {
         padding: 20px;
     }
+    
+    .api-section {
+        padding: 20px;
+    }
+}
+
+/* Override any theme max-width restrictions */
+.rst-content {
+    max-width: none !important;
+}
+
+.document .body {
+    max-width: none !important;
+}
+
+/* Ensure images and media scale properly in wider content */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.figure {
+    max-width: none;
+    text-align: center;
+    margin: 1.5em 0;
 }
