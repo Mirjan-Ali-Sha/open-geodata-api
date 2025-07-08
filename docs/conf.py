@@ -66,14 +66,14 @@ sys.path.insert(0, os.path.abspath('..'))
 # Project information
 project = 'Open Geodata API'
 author = 'Mirjan Ali Sha'
-# copyright = '2025, Mirjan Ali Sha'
-copyright = [
-    {
-        "year": "2025",
-        "holder": "Mirjan Ali Sha",
-        "url": "https://mirjanalisha.github.io/"
-    }
-]
+copyright = '2025, Mirjan Ali Sha'
+# copyright = [
+#     {
+#         "year": "2025",
+#         "holder": "Mirjan Ali Sha",
+#         "url": "https://mirjanalisha.github.io/"
+#     }
+# ]
 
 
 
