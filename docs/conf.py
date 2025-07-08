@@ -125,6 +125,14 @@ html_theme_options = {
     'includehidden': True,
     'titles_only': False,
     'logo_only': True,
+    # ------ Layout options ------
+    'logo': 'Open Geodata API',
+    'logo_name': True,
+    'sidebar_width': '20%',
+    'body_max_width': '75%',
+    'body_min_width': '75%',
+    'page_width': 'auto',
+    'fixed_sidebar': True,
 }
 
 # HTML configuration
