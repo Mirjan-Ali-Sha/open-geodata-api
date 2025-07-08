@@ -23,11 +23,11 @@ Open Geodata API provides seamless access to multiple open geospatial data APIs 
      </div>
      <div class="feature-box">
        <h3>🔐 Smart URLs</h3>
-       <p>Automatic signing, validation, and expiration handling</p>
+       <p>Automatic signing, validation, and expiration handling URLs</p>
      </div>
      <div class="feature-box">
        <h3>📦 Your Choice</h3>
-       <p>Use any raster package (rioxarray, rasterio, GDAL)</p>
+       <p>Use any raster package (rioxarray, rasterio, GDAL) to read data</p>
      </div>
      <div class="feature-box">
        <h3>🔄 Complete Workflow</h3>
@@ -136,9 +136,9 @@ Documentation Sections
 Philosophy
 ----------
 
-🎯 **Core Focus**: We provide URLs - you choose how to read them!  
-📦 **Use Any Package**: rioxarray, rasterio, GDAL, or any package you prefer  
-🚀 **Maximum Flexibility**: Zero restrictions on your workflow  
+| 🎯 **Core Focus**: We provide URLs - you choose how to read them!  
+| 📦 **Use Any Package**: rioxarray, rasterio, GDAL, or any package you prefer  
+| 🚀 **Maximum Flexibility**: Zero restrictions on your workflow  
 
 Perfect for researchers, data scientists, and developers working with satellite imagery and geospatial analysis.
 
