@@ -27,7 +27,7 @@ Open Geodata API provides seamless access to multiple open geospatial data APIs 
      </div>
      <div class="feature-box">
        <h3>📦 Your Choice</h3>
-       <p>Use any raster package (rioxarray, rasterio, GDAL) to read data</p>
+       <p>Use any raster package (rioxarray, rasterio, GDAL) to read the data</p>
      </div>
      <div class="feature-box">
        <h3>🔄 Complete Workflow</h3>
