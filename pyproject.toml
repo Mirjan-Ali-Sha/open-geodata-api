@@ -82,6 +82,19 @@ dev = [
     "sphinx",
     "sphinx-rtd-theme",
 ]
+# CLI dependencies
+cli = [
+    "requests>=2.25.0",
+    "planetary-computer>=1.0.0",
+    "pystac-client>=0.8.6",
+    "tqdm>=4.67.1",
+    "click>=8.0.0",
+]
+
+# None dependencies
+none = [
+
+]
 
 # CLI Entry Points - This is the key addition!
 [project.scripts]

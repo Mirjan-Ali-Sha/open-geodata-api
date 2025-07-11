@@ -54,6 +54,25 @@ For contributors:
    cd open-geodata-api
    pip install -e .[dev]
 
+CLI Installation
+----------------
+For command-line interface (CLI) usage, install the CLI package:
+
+.. code-block:: bash
+
+   pip install open-geodata-api[cli]
+
+None Dependencies (Optional)
+-----------------------------
+For additional functionality that does not require any specific dependencies, you can install the package with no extra dependencies:
+But this is not recommended unless you are sure you do not need any of the optional features.
+User have to install the optional dependencies manually if needed. [This is useful for minimal installations or when you want to manage dependencies yourself.]
+Requirements are `requests`, `planetary-computer`, `tqdm`, and `click` install them carefully.
+
+.. code-block:: bash
+
+   pip install open-geodata-api[none]
+
 Verify Installation
 -------------------
 
@@ -68,20 +87,27 @@ Dependencies
 Core Dependencies
 ~~~~~~~~~~~~~~~~~
 
-- requests >= 2.25.0
-- pandas >= 1.3.0  
-- planetary-computer >= 1.0.0
-- tqdm >= 4.67.1
-- click >= 8.0.0
+- `requests >= 2.25.0`
+- `pandas >= 1.3.0`
+- `planetary-computer >= 1.0.0`
+- `tqdm >= 4.67.1`
+- `click >= 8.0.0`
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 
-- geopandas >= 0.10.0 (for spatial operations)
-- rioxarray >= 0.11.0 (for raster reading)
-- rasterio >= 1.3.0 (for raster reading)
-- xarray >= 0.19.0 (for n-dimensional arrays)
-- shapely >= 1.8.0 (for geometric operations)
+- `geopandas >= 0.10.0` (for spatial operations)
+- `rioxarray >= 0.11.0` (for raster reading)
+- `rasterio >= 1.3.0` (for raster reading)
+- `xarray >= 0.19.0` (for n-dimensional arrays)
+- `shapely >= 1.8.0` (for geometric operations)
+
+CLI Dependencies (Optional)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- `requests >= 2.25.0`
+- `planetary-computer >= 1.0.0`
+- `tqdm >= 4.67.1`
+- `click >= 8.0.0`
 
 System Requirements
 -------------------
