@@ -1,7 +1,7 @@
 Configuration Reference
 =======================
 
-Complete guide to configuring and optimizing the open-geodata-api library for different environments and use cases.
+Complete guide to configuring and optimizing the open-geodata-api library for different environments and use cases. Most of the configuration options are not tested in the CI, so please use them with caution.
 
 Overview
 --------

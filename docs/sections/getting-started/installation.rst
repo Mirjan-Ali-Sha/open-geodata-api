@@ -67,7 +67,7 @@ None Dependencies (Optional)
 For additional functionality that does not require any specific dependencies, you can install the package with no extra dependencies:
 But this is not recommended unless you are sure you do not need any of the optional features.
 User have to install the optional dependencies manually if needed. [This is useful for minimal installations or when you want to manage dependencies yourself.]
-Requirements are `requests`, `planetary-computer`, `tqdm`, and `click` install them carefully.
+Requirements are `requests`, `planetary-computer`, `tqdm`, and `click` install them cautiously.
 
 .. code-block:: bash
 
