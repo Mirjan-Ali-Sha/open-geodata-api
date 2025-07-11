@@ -34,14 +34,33 @@ For Raster Reading
 
 Includes: rioxarray, rasterio, xarray
 
-For Complete Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~
+For Complete Installation (Recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
    pip install open-geodata-api[complete]
 
 Includes all optional dependencies: spatial analysis + raster I/O
+
+CLI Installation
+~~~~~~~~~~~~~~~~
+For command-line interface (CLI) usage, install the CLI package:
+
+.. code-block:: bash
+
+   pip install open-geodata-api[cli]
+
+None Dependencies
+~~~~~~~~~~~~~~~~~
+For additional functionality that does not require any specific dependencies, you can install the package with no extra dependencies:
+But this is not recommended unless you are sure you do not need any of the optional features.
+User have to install the optional dependencies manually if needed. [This is useful for minimal installations or when you want to manage dependencies yourself.]
+Requirements are `requests`, `planetary-computer`, `tqdm`, and `click` install them cautiously.
+
+.. code-block:: bash
+
+   pip install open-geodata-api[none]
 
 Development Installation
 ------------------------
@@ -54,24 +73,6 @@ For contributors:
    cd open-geodata-api
    pip install -e .[dev]
 
-CLI Installation
-----------------
-For command-line interface (CLI) usage, install the CLI package:
-
-.. code-block:: bash
-
-   pip install open-geodata-api[cli]
-
-None Dependencies (Optional)
------------------------------
-For additional functionality that does not require any specific dependencies, you can install the package with no extra dependencies:
-But this is not recommended unless you are sure you do not need any of the optional features.
-User have to install the optional dependencies manually if needed. [This is useful for minimal installations or when you want to manage dependencies yourself.]
-Requirements are `requests`, `planetary-computer`, `tqdm`, and `click` install them cautiously.
-
-.. code-block:: bash
-
-   pip install open-geodata-api[none]
 
 Verify Installation
 -------------------
