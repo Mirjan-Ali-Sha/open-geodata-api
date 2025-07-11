@@ -104,8 +104,16 @@ class STACItem:
 
     def get_rgb_urls(self, signed: Optional[bool] = None) -> Dict[str, str]:
         """Get RGB band URLs (convenience method)."""
-        rgb_bands = ['red', 'green', 'blue']
-        return self.get_band_urls(rgb_bands, signed=signed)
+        rgb_bands = ['B04', 'B03', 'B02']
+        if self.provider == "planetary_computer":
+            return self.get_band_urls(rgb_bands, signed=signed)
+        elif self.provider == "earthsearch":
+            # EarthSearch uses different band names
+            rgb_bands = ['red', 'green', 'blue']
+            return self.get_band_urls(rgb_bands, signed=signed)
+        else:
+            # Fallback to generic asset URLs
+            return self.get_all_asset_urls(signed=signed)
 
     def get_sentinel2_urls(self, signed: Optional[bool] = None) -> Dict[str, str]:
         """Get common Sentinel-2 band URLs (convenience method)."""

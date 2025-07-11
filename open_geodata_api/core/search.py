@@ -176,6 +176,22 @@ class STACSearch:
         """Return total number of matched items if available."""
         return self._results.get('numberMatched', self._results.get('matched'))
 
+    def total_items(self) -> Optional[int]:
+        """Return total number of items found."""
+        return self._results.get('total_returned')
+
+    def search_params(self) -> Optional[dict]:
+        """Return search parameters used for the query."""
+        return self._results.get('search_params', self._original_params)
+
+    def all_keys(self) -> List[str]:
+        """Return all keys from the search results."""
+        return list(self._results.keys())
+    
+    def list_product_ids(self) -> List[str]:
+        """Return list of unique product IDs from the items."""
+        return list({item.get('id') for item in self._items if isinstance(item, dict)})
+
     def __len__(self):
         return len(self._items)
 
