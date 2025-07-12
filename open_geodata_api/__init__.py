@@ -3,7 +3,7 @@ Open Geodata API: Unified Python client for open geospatial data APIs
 Supports Microsoft Planetary Computer, AWS EarthSearch, and more
 """
 
-__version__ = "0.2.7"
+__version__ = "0.2.9"
 __author__ = "Mirjan Ali Sha"
 __email__ = "mastools.help@gmail.com"
 

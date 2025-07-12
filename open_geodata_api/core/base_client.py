@@ -106,27 +106,60 @@ class BaseSTACClient(ABC):
 
         return datetime_str
 
-    def _build_search_payload(self, collections, intersects, bbox, datetime, query, limit):
-        """Build search payload from parameters."""
+    def _build_search_payload(self, collections, intersects, bbox, datetime, query, limit, days=None):
+        """
+        Build search payload from parameters.
+        
+        Args:
+            collections: List of collection names
+            intersects: GeoJSON geometry for intersection
+            bbox: Bounding box [west, south, east, north]
+            datetime: Specific datetime or datetime range
+            query: Additional query parameters
+            limit: Maximum number of results
+            days: Number of days back from today to search (convenience parameter)
+            
+        Returns:
+            Dictionary containing the search payload
+        """
         search_payload = {}
         
         if collections:
             search_payload["collections"] = collections
+        
         if intersects:
             search_payload["intersects"] = intersects
+        
         if bbox:
             search_payload["bbox"] = bbox
-        if datetime:
+        
+        # 🆕 ENHANCED: Handle 'days' parameter with priority over datetime
+        if days is not None:
+            # Convert days to datetime range (days back from today)
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=days)
+            
+            datetime_range = f"{start_date.strftime('%Y-%m-%dT%H:%M:%SZ')}/{end_date.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+            search_payload["datetime"] = datetime_range
+            
+            if self.verbose:
+                print(f"🗓️ Using days parameter: {days} days back ({start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')})")
+        
+        elif datetime:
+            # Use explicit datetime if days is not specified
             if isinstance(datetime, list):
                 search_payload["datetime"] = "/".join(datetime)
             else:
                 search_payload["datetime"] = self._format_datetime_rfc3339(datetime)
+        
         if query:
             search_payload["query"] = query
+        
         if limit:
             search_payload["limit"] = limit
         
         return search_payload
+
 
     @abstractmethod
     def search(self, collections: Optional[List[str]] = None, **kwargs) -> STACSearch:
