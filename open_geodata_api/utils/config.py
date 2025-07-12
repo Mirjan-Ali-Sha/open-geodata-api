@@ -4,7 +4,6 @@ Configuration management for open-geodata-api
 
 import json
 import os
-import psutil
 from pathlib import Path
 from typing import Dict, Any, Optional, Union
 
