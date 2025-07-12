@@ -1,5 +1,5 @@
 """
-STAC Search with silent 3-tier fallback strategy - Enhanced Version
+STAC Search with optimized 3-tier fallback strategy - Performance Enhanced
 """
 
 import warnings
@@ -14,7 +14,7 @@ except ImportError:
     PYSTAC_AVAILABLE = False
 
 class STACSearch:
-    """Enhanced STAC Search with silent 3-tier fallback strategy for all methods."""
+    """Optimized STAC Search with smart fallback strategy and improved performance."""
     
     def __init__(self, search_results: Dict, provider: str = "unknown",
                  client_instance=None, original_search_params: Optional[Dict] = None,
@@ -28,7 +28,7 @@ class STACSearch:
         self._search_url = search_url
         self._verbose = verbose
         
-        # Enhanced fallback strategy tracking
+        # Optimized fallback strategy tracking
         self._fallback_attempted = False
         self._pystac_attempted = False
         self._chunking_attempted = False
@@ -38,65 +38,79 @@ class STACSearch:
         self._all_items_cache = None
         self._fallback_metadata_cache = {}
         
-        # If all items are already cached, set them up immediately
-        if self._all_items_cached:
-            self._all_items_cache = STACItemCollection(self._items, provider=self.provider)
+        # Performance optimization: Extract and store the original limit
+        self._original_limit = self._original_params.get('limit')
+        self._respect_limit = True
+        
+        # 🚀 PERFORMANCE OPTIMIZATION: Pre-calculate if fallback is needed
+        self._needs_fallback = self._calculate_fallback_need()
+        
+        # 🚀 PERFORMANCE OPTIMIZATION: Cache simple results immediately if sufficient
+        if not self._needs_fallback:
+            limited_items = self._apply_limit_if_needed(self._items)
+            self._all_items_cache = STACItemCollection(limited_items, provider=self.provider)
+            self._all_items_cached = True
     
-    def _ensure_fallback_data(self) -> bool:
-        """🔄 Generic fallback data retrieval - used by multiple methods."""
-        if self._all_items_cache:
-            return True
-            
-        # Try to get all items using existing fallback strategy
-        try:
-            self._all_items_cache = self.get_all_items()
-            return True
-        except Exception as e:
-            if self._verbose:
-                print(f"⚠️ Fallback data retrieval failed: {e}")
+    def _calculate_fallback_need(self) -> bool:
+        """🚀 OPTIMIZATION: Pre-calculate if fallback is actually needed."""
+        # No fallback needed if we have enough items for the requested limit
+        if self._original_limit and len(self._items) >= self._original_limit:
             return False
+        
+        # No fallback needed if we have less than 100 items (not hitting API limit)
+        if len(self._items) < 100:
+            return False
+        
+        # Fallback needed if we hit the 100-item API limit and want more
+        return len(self._items) == 100 and (not self._original_limit or self._original_limit > 100)
+    
+    def _apply_limit_if_needed(self, items_list: List) -> List:
+        """🔧 Apply original limit to items if specified."""
+        if self._respect_limit and self._original_limit and len(items_list) > self._original_limit:
+            if self._verbose:
+                print(f"🔧 Applying limit: {self._original_limit} items (was {len(items_list)})")
+            return items_list[:self._original_limit]
+        return items_list
     
     def get_all_items(self) -> STACItemCollection:
-        """🔄 3-TIER FALLBACK: Simple → pystac-client → chunking (silent by default)."""
-        # If all items are already cached, return immediately
+        """🚀 OPTIMIZED: Fast return for simple cases, fallback only when needed."""
+        # 🚀 PERFORMANCE: Return cached result immediately if available
         if self._all_items_cache:
             return self._all_items_cache
         
-        # If items were already fetched during search, use them
-        if self._all_items_cached:
-            self._all_items_cache = STACItemCollection(self._items, provider=self.provider)
+        # 🚀 PERFORMANCE: Skip fallback logic entirely if not needed
+        if not self._needs_fallback:
+            limited_items = self._apply_limit_if_needed(self._items)
+            self._all_items_cache = STACItemCollection(limited_items, provider=self.provider)
             return self._all_items_cache
         
-        # Start fallback strategy if not already attempted
+        # Only attempt fallback if actually needed and not already attempted
         if not self._fallback_attempted and self._client:
             self._fallback_attempted = True
             
-            # 🔄 STEP 1: Check if we need fallback (exactly 100 items = likely truncated)
-            if len(self._items) == 100:
-                if self._verbose:
-                    print(f"🔄 Detected {len(self._items)} items - attempting fallback strategies...")
-                
-                # 🔄 STEP 2: Try pystac-client first
-                pystac_result = self._try_pystac_fallback()
-                if pystac_result:
-                    return pystac_result
-                
-                # 🔄 STEP 3: Try chunking search as last resort
-                chunking_result = self._try_chunking_fallback()
-                if chunking_result:
-                    return chunking_result
-                
-                if self._verbose:
-                    print("⚠️ All fallback strategies failed, returning simple search results")
-            else:
-                if self._verbose:
-                    print(f"✅ Simple search returned {len(self._items)} items (no fallback needed)")
+            if self._verbose:
+                print(f"🔄 Attempting fallback strategies for {len(self._items)} items...")
+            
+            # Try pystac-client first
+            pystac_result = self._try_pystac_fallback()
+            if pystac_result:
+                return pystac_result
+            
+            # Try chunking search as last resort
+            chunking_result = self._try_chunking_fallback()
+            if chunking_result:
+                return chunking_result
+            
+            if self._verbose:
+                print("⚠️ All fallback strategies failed, returning simple search results")
         
-        # Return simple search results
-        return STACItemCollection(self._items, provider=self.provider)
+        # Return simple search results with limit applied
+        limited_items = self._apply_limit_if_needed(self._items)
+        self._all_items_cache = STACItemCollection(limited_items, provider=self.provider)
+        return self._all_items_cache
     
     def _try_pystac_fallback(self) -> Optional[STACItemCollection]:
-        """🔄 FALLBACK TIER 2: Try pystac-client pagination (silent)."""
+        """🔄 FALLBACK TIER 2: Try pystac-client pagination."""
         if self._pystac_attempted or not PYSTAC_AVAILABLE:
             return None
             
@@ -109,30 +123,27 @@ class STACSearch:
             # Create pystac-client catalog for this provider
             pystac_catalog = self._client._create_pystac_catalog_fallback()
             if not pystac_catalog:
-                if self._verbose:
-                    print("  ❌ pystac-client catalog creation failed")
                 return None
             
             # Create pystac-client search
             pystac_search = pystac_catalog.search(**self._original_params)
             
-            # 🔇 SUPPRESS DEPRECATION WARNING
+            # Suppress warnings and get all items
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=FutureWarning, module="pystac_client")
                 warnings.filterwarnings("ignore", message=".*get_all_items.*deprecated.*")
                 
-                # Get all items using pystac-client's magic (suppressed warnings)
                 pystac_items = pystac_search.get_all_items()
                 all_items_dicts = [item.to_dict() for item in pystac_items]
             
-            if self._verbose:
-                print(f"  ✅ pystac-client retrieved {len(all_items_dicts)} total items")
+            # Apply limit to pystac results
+            limited_items = self._apply_limit_if_needed(all_items_dicts)
             
-            # Cache metadata from pystac search
-            self._fallback_metadata_cache['pystac_matched'] = len(all_items_dicts)
+            if self._verbose:
+                print(f"  ✅ pystac-client retrieved {len(limited_items)} items")
             
             # Cache and return
-            self._all_items_cache = STACItemCollection(all_items_dicts, provider=self.provider)
+            self._all_items_cache = STACItemCollection(limited_items, provider=self.provider)
             self._all_items_cached = True
             return self._all_items_cache
             
@@ -142,7 +153,7 @@ class STACSearch:
             return None
     
     def _try_chunking_fallback(self) -> Optional[STACItemCollection]:
-        """🔄 FALLBACK TIER 3: Try own chunking search (silent)."""
+        """🔄 FALLBACK TIER 3: Try own chunking search."""
         if self._chunking_attempted:
             return None
             
@@ -152,7 +163,6 @@ class STACSearch:
             if self._verbose:
                 print("🔄 Tier 3: Trying chunking fallback...")
             
-            # Use client's chunking method if available
             if hasattr(self._client, '_fallback_chunking_search'):
                 chunked_items = self._client._fallback_chunking_search(
                     self._original_params,
@@ -160,20 +170,16 @@ class STACSearch:
                     verbose=self._verbose
                 )
                 
-                if self._verbose:
-                    print(f"  ✅ Chunking retrieved {len(chunked_items)} total items")
+                # Apply limit to chunking results
+                limited_items = self._apply_limit_if_needed(chunked_items)
                 
-                # Cache metadata from chunking search
-                self._fallback_metadata_cache['chunking_matched'] = len(chunked_items)
+                if self._verbose:
+                    print(f"  ✅ Chunking retrieved {len(limited_items)} items")
                 
                 # Cache and return
-                self._all_items_cache = STACItemCollection(chunked_items, provider=self.provider)
+                self._all_items_cache = STACItemCollection(limited_items, provider=self.provider)
                 self._all_items_cached = True
                 return self._all_items_cache
-            else:
-                if self._verbose:
-                    print("  ❌ Chunking method not available")
-                return None
                 
         except Exception as e:
             if self._verbose:
@@ -185,46 +191,29 @@ class STACSearch:
         return self.get_all_items()
     
     def items(self):
-        """🔄 ENHANCED: Return iterator over ALL items with fallback support."""
-        # Try to get all items using fallback strategy
-        if self._ensure_fallback_data():
-            # Use cached complete item collection
-            for item_data in self._all_items_cache.items:
+        """🚀 OPTIMIZED: Return iterator over items with smart caching."""
+        # Use cached items if available
+        if self._all_items_cache:
+            for item_data in self._all_items_cache._items:
                 from .items import STACItem
                 yield STACItem(item_data, provider=self.provider)
         else:
-            # Fallback to original behavior
-            for item_data in self._items:
+            # Use simple items with limit applied
+            limited_items = self._apply_limit_if_needed(self._items)
+            for item_data in limited_items:
                 from .items import STACItem
                 yield STACItem(item_data, provider=self.provider)
     
     def matched(self) -> Optional[int]:
-        """🔄 ENHANCED: Return total number of matched items with fallback support."""
-        # Try fallback sources first
-        if 'pystac_matched' in self._fallback_metadata_cache:
-            return self._fallback_metadata_cache['pystac_matched']
-        
-        if 'chunking_matched' in self._fallback_metadata_cache:
-            return self._fallback_metadata_cache['chunking_matched']
-        
-        # Try to get accurate count from fallback data
-        if self._ensure_fallback_data():
-            count = len(self._all_items_cache.items)
-            self._fallback_metadata_cache['fallback_matched'] = count
-            return count
-        
-        # Original behavior
+        """Return total number of matched items."""
+        if self._all_items_cache:
+            return len(self._all_items_cache._items)
         return self._results.get('numberMatched', self._results.get('matched'))
     
     def total_items(self) -> Optional[int]:
-        """🔄 ENHANCED: Return total number of items with fallback support."""
-        # Try to get accurate count from fallback data
-        if self._ensure_fallback_data():
-            count = len(self._all_items_cache.items)
-            self._fallback_metadata_cache['fallback_total'] = count
-            return count
-        
-        # Original behavior
+        """Return total number of items."""
+        if self._all_items_cache:
+            return len(self._all_items_cache._items)
         return self._results.get('total_returned')
     
     def search_params(self) -> Optional[dict]:
@@ -236,43 +225,40 @@ class STACSearch:
         return list(self._results.keys())
     
     def list_product_ids(self) -> List[str]:
-        """🔄 ENHANCED: Return complete list of product IDs with fallback support."""
-        # Try to get complete list from fallback data
-        if self._ensure_fallback_data():
-            return list({
-                item.get('id') for item in self._all_items_cache.items 
-                if isinstance(item, dict) and item.get('id')
-            })
-        
-        # Original behavior
-        return list({
-            item.get('id') for item in self._items 
-            if isinstance(item, dict) and item.get('id')
-        })
+        """🔧 FIXED: Return product IDs with simplified, reliable logic."""
+        return [item.get("id") for item in self.items()]
     
     def get_fallback_status(self) -> Dict[str, Any]:
-        """🔄 NEW: Get detailed fallback status information."""
+        """Get detailed fallback status information."""
         return {
+            'needs_fallback': self._needs_fallback,
             'fallback_attempted': self._fallback_attempted,
             'pystac_attempted': self._pystac_attempted,
             'chunking_attempted': self._chunking_attempted,
             'all_items_cached': self._all_items_cached,
-            'cache_metadata': self._fallback_metadata_cache,
             'original_items_count': len(self._items),
-            'cached_items_count': len(self._all_items_cache.items) if self._all_items_cache else None
+            'cached_items_count': len(self._all_items_cache._items) if self._all_items_cache else None,
+            'original_limit': self._original_limit,
+            'respect_limit': self._respect_limit
         }
     
+    def set_limit_enforcement(self, enforce: bool):
+        """Control whether to enforce the original limit parameter."""
+        self._respect_limit = enforce
+        # Clear cache to force recalculation
+        self._all_items_cache = None
+        self._fallback_attempted = False
+        self._needs_fallback = self._calculate_fallback_need()
+    
     def __len__(self):
-        """🔄 ENHANCED: Return length with fallback support."""
-        # Try to get accurate count from fallback data
-        if self._ensure_fallback_data():
-            return len(self._all_items_cache.items)
-        
-        # Original behavior
-        return len(self._items)
+        """Return length with optimized caching."""
+        if self._all_items_cache:
+            return len(self._all_items_cache._items)
+        return len(self._apply_limit_if_needed(self._items))
     
     def __repr__(self):
-        """🔄 ENHANCED: Enhanced representation with fallback info."""
+        """Enhanced representation with optimization info."""
         count = len(self)
-        status = "with fallback" if self._all_items_cached else "simple"
-        return f"STACSearch({count} items found, provider='{self.provider}', {status})"
+        status = "cached" if self._all_items_cached else "simple"
+        limit_info = f", limit={self._original_limit}" if self._original_limit else ""
+        return f"STACSearch({count} items found, provider='{self.provider}', {status}{limit_info})"
