@@ -32,7 +32,8 @@ class PlanetaryComputerCollections(BaseSTACClient):
                datetime: Optional[Union[str, List[str]]] = None,
                query: Optional[Dict] = None,
                limit: Optional[int] = None,
-               max_items: Optional[int] = None) -> STACSearch:
+               max_items: Optional[int] = None,
+               days: Optional[int] = None) -> STACSearch:
         """🔄 Search with silent 3-tier fallback: Simple → pystac-client → chunking."""
         
         if collections:
@@ -41,7 +42,7 @@ class PlanetaryComputerCollections(BaseSTACClient):
                 raise ValueError(f"Invalid collections: {invalid_collections}")
 
         search_payload = self._build_search_payload(
-            collections, intersects, bbox, datetime, query, limit
+            collections, intersects, bbox, datetime, query, limit, days
         )
 
         try:

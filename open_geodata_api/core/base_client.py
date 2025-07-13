@@ -135,8 +135,10 @@ class BaseSTACClient(ABC):
         
         # 🆕 ENHANCED: Handle 'days' parameter with priority over datetime
         if days is not None:
+            from datetime import datetime as dt, timedelta
+            # 🔥 FIX: Use dt.now() instead of datetime.now()
             # Convert days to datetime range (days back from today)
-            end_date = datetime.now()
+            end_date = dt.now()
             start_date = end_date - timedelta(days=days)
             
             datetime_range = f"{start_date.strftime('%Y-%m-%dT%H:%M:%SZ')}/{end_date.strftime('%Y-%m-%dT%H:%M:%SZ')}"
