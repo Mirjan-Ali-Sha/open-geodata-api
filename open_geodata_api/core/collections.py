@@ -1,5 +1,5 @@
 """
-STAC Item Collections module - Enhanced with fixed pattern matching
+STAC Item Collections module - Complete with all essential functions including missing ones
 """
 
 import re
@@ -7,6 +7,7 @@ import json
 from typing import List, Dict, Any, Optional, Union
 from urllib.parse import urlparse
 from pathlib import Path
+from datetime import datetime, timedelta
 
 try:
     import pandas as pd
@@ -20,9 +21,15 @@ try:
 except ImportError:
     GEOPANDAS_AVAILABLE = False
 
+try:
+    import geojson
+    GEOJSON_AVAILABLE = True
+except ImportError:
+    GEOJSON_AVAILABLE = False
+
 class STACItemCollection:
     """
-    Enhanced STAC Item Collection with fixed pattern matching and comprehensive functionality.
+    Complete STAC Item Collection with all essential functions including the missing ones.
     """
     
     def __init__(self, items: List[Dict], provider: str = "unknown"):
@@ -36,39 +43,365 @@ class STACItemCollection:
         self._items = items
         self.provider = provider
         self._cached_dataframe = None
+        self._parent_search = None
     
     def __len__(self):
         """Return number of items in collection."""
         return len(self._items)
     
     def __getitem__(self, index):
-        """Get item by index."""
-        return self._items[index]
+        """Get item by index as STACItem object."""
+        from .items import STACItem
+        return STACItem(self._items[index], provider=self.provider)
     
     def __iter__(self):
-        """Iterate over items."""
-        return iter(self._items)
+        """Iterate over items as STACItem objects."""
+        from .items import STACItem
+        for item_data in self._items:
+            yield STACItem(item_data, provider=self.provider)
     
     @property
     def items(self):
-        """Get all items as list."""
+        """Get all items as list of STACItem objects."""
+        from .items import STACItem
+        return [STACItem(item_data, provider=self.provider) for item_data in self._items]
+    
+    @property
+    def raw_items(self):
+        """Get raw item dictionaries (for internal use)."""
         return self._items
     
-    def get_assets_by_pattern(self, pattern: str, match_type: str = "extension") -> List[str]:
+    # ========================================
+    # MISSING FUNCTIONS - ADDED
+    # ========================================
+    
+    def get_available_bands(self) -> List[str]:
         """
-        🔧 FIXED: Get asset names that match the specified pattern.
+        🆕 ADDED: Get list of all available bands/assets across the collection.
+        
+        Returns:
+            Sorted list of unique band/asset names available in the collection
+        """
+        all_bands = set()
+        
+        for item in self._items:
+            assets = item.get('assets', {})
+            all_bands.update(assets.keys())
+        
+        return sorted(list(all_bands))
+    
+    def get_all_urls(self, signed: Optional[bool] = None) -> Dict[str, Dict[str, str]]:
+        """
+        🆕 ADDED: Get all URLs in the requested format.
+        
+        Format: {<product_id>: {<band_name>: <url>, <band_name>: <url>, ...}, ...}
         
         Args:
-            pattern: Pattern to search for (e.g., ".xml", ".jp2", ".tif")
-            match_type: Type of matching to perform:
-                - "extension": Match actual file extensions from URLs (default)
-                - "mime": Match MIME types
-                - "name": Match asset names (original behavior)
-                - "url": Match full URLs
-                
+            signed: Whether to sign URLs (auto-detected by provider if None)
+            
         Returns:
-            List of asset names that match the pattern
+            Dictionary with product_id -> {band_name: url} mapping
         """
+        all_urls = {}
+        
+        from .items import STACItem
+        for i, item_data in enumerate(self._items):
+            stac_item = STACItem(item_data, provider=self.provider)
+            product_id = item_data.get('id', f'item_{i}')
+            
+            try:
+                # Get all asset URLs for this item
+                item_urls = stac_item.get_all_asset_urls(signed=signed)
+                all_urls[product_id] = item_urls
+                
+            except Exception as e:
+                print(f"⚠️ Error processing item {product_id}: {e}")
+                all_urls[product_id] = {}
+        
+        return all_urls
+    
+    def get_band_urls(self, band_names: Optional[List[str]] = None, 
+                      asset_type: str = "all", signed: Optional[bool] = None) -> Dict[str, Dict[str, str]]:
+        """
+        🆕 ADDED: Get URLs for specific bands or asset types with filtering options.
+        
+        Args:
+            band_names: List of specific band names to include (None for all)
+            asset_type: Filter by asset type:
+                - "all": All assets (default)
+                - "image": Only image/tiff assets
+                - "bands": Only spectral bands (B01, B02, etc.)
+                - "visual": Only visual/RGB assets
+            signed: Whether to sign URLs (auto-detected by provider if None)
+            
+        Returns:
+            Dictionary with product_id -> {band_name: url} mapping
+        """
+        filtered_urls = {}
+        
+        from .items import STACItem
+        for i, item_data in enumerate(self._items):
+            stac_item = STACItem(item_data, provider=self.provider)
+            product_id = item_data.get('id', f'item_{i}')
+            
+            try:
+                # Get all asset URLs for this item
+                all_item_urls = stac_item.get_all_asset_urls(signed=signed)
+                
+                # Apply filtering
+                filtered_item_urls = {}
+                
+                for asset_key, asset_url in all_item_urls.items():
+                    # Check if asset should be included
+                    include_asset = False
+                    
+                    # Filter by band names if specified
+                    if band_names:
+                        if asset_key in band_names:
+                            include_asset = True
+                    else:
+                        # Filter by asset type
+                        if asset_type == "all":
+                            include_asset = True
+                        elif asset_type == "image":
+                            # Check if it's an image/tiff asset
+                            asset_data = item_data.get('assets', {}).get(asset_key, {})
+                            asset_mime_type = asset_data.get('type', '').lower()
+                            if any(img_type in asset_mime_type for img_type in ['image/tiff', 'image/geotiff', 'application/geotiff']):
+                                include_asset = True
+                        elif asset_type == "bands":
+                            # Check if it's a spectral band (B01, B02, etc.)
+                            if re.match(r'^B\d+A?$', asset_key) or asset_key.lower() in ['red', 'green', 'blue', 'nir', 'swir']:
+                                include_asset = True
+                        elif asset_type == "visual":
+                            # Check if it's a visual asset
+                            if asset_key.lower() in ['visual', 'true-color', 'rgb', 'thumbnail', 'preview']:
+                                include_asset = True
+                    
+                    if include_asset:
+                        filtered_item_urls[asset_key] = asset_url
+                
+                filtered_urls[product_id] = filtered_item_urls
+                
+            except Exception as e:
+                print(f"⚠️ Error processing item {product_id}: {e}")
+                filtered_urls[product_id] = {}
+        
+        return filtered_urls
+    
+    # ========================================
+    # UPDATED FUNCTIONS
+    # ========================================
+    
+    def to_simple_products_list(self, include_urls: bool = True, 
+                               url_bands: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+        """
+        🔧 UPDATED: Convert collection to simple products list with optional URLs.
+        
+        Args:
+            include_urls: Whether to include URLs with href key
+            url_bands: Specific bands to include URLs for (None for all)
+            
+        Returns:
+            List of simplified product dictionaries with optional URLs
+        """
+        simple_products = []
+        
+        from .items import STACItem
+        for i, item_data in enumerate(self._items):
+            properties = item_data.get('properties', {})
+            
+            simple_product = {
+                'id': item_data.get('id', f'item_{i}'),
+                'collection': item_data.get('collection', 'unknown'),
+                'datetime': properties.get('datetime', 'unknown'),
+                'cloud_cover': properties.get('eo:cloud_cover'),
+                'asset_count': len(item_data.get('assets', {})),
+                'provider': self.provider
+            }
+            
+            # Add URLs if requested
+            if include_urls:
+                try:
+                    stac_item = STACItem(item_data, provider=self.provider)
+                    
+                    if url_bands:
+                        # Get URLs for specific bands
+                        urls = {}
+                        for band in url_bands:
+                            if stac_item.has_asset(band):
+                                urls[band] = stac_item.get_asset_url(band)
+                        simple_product['href'] = urls
+                    else:
+                        # Get all URLs
+                        simple_product['href'] = stac_item.get_all_asset_urls()
+                        
+                except Exception as e:
+                    print(f"⚠️ Error getting URLs for item {simple_product['id']}: {e}")
+                    simple_product['href'] = {}
+            
+            simple_products.append(simple_product)
+        
+        return simple_products
+    
+    # ========================================
+    # EXISTING ESSENTIAL FUNCTIONS (MAINTAINED)
+    # ========================================
+    
+    def to_list(self) -> List[Dict]:
+        """Convert collection to list of dictionaries."""
+        return self._items.copy()
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert collection to dictionary format."""
+        return {
+            'type': 'FeatureCollection',
+            'provider': self.provider,
+            'total_items': len(self._items),
+            'features': self._items.copy(),
+            'metadata': {
+                'date_range': self.get_date_range(),
+                'extensions': self.list_asset_extensions(),
+                'collections': self.get_unique_collections(),
+                'available_bands': self.get_available_bands()
+            }
+        }
+    
+    def to_geojson(self, filename: Optional[str] = None) -> Dict[str, Any]:
+        """Convert collection to GeoJSON format."""
+        if GEOJSON_AVAILABLE:
+            try:
+                features = []
+                for item in self._items:
+                    if item.get('geometry'):
+                        features.append(geojson.Feature(
+                            geometry=item['geometry'],
+                            properties=item.get('properties', {}),
+                            id=item.get('id')
+                        ))
+                
+                collection = geojson.FeatureCollection(features)
+                
+                if filename:
+                    with open(filename, 'w') as f:
+                        geojson.dump(collection, f, indent=2)
+                    print(f"✅ GeoJSON saved to {filename}")
+                
+                return collection
+                
+            except Exception as e:
+                print(f"⚠️ geojson library error: {e}, falling back to manual creation")
+        
+        # Manual GeoJSON creation
+        geojson_data = {
+            'type': 'FeatureCollection',
+            'features': []
+        }
+        
+        for item in self._items:
+            if item.get('geometry'):
+                feature = {
+                    'type': 'Feature',
+                    'geometry': item['geometry'],
+                    'properties': item.get('properties', {}),
+                    'id': item.get('id')
+                }
+                geojson_data['features'].append(feature)
+        
+        if filename:
+            with open(filename, 'w') as f:
+                json.dump(geojson_data, f, indent=2)
+            print(f"✅ GeoJSON saved to {filename}")
+        
+        if not GEOJSON_AVAILABLE:
+            print("💡 For better GeoJSON support, install: pip install geojson")
+        
+        return geojson_data
+    
+    def get_all_assets(self) -> Dict[str, List[str]]:
+        """Get all unique assets across all items."""
+        all_assets = {}
+        
+        for i, item in enumerate(self._items):
+            assets = item.get('assets', {})
+            item_id = item.get('id', f'item_{i}')
+            
+            for asset_key in assets.keys():
+                if asset_key not in all_assets:
+                    all_assets[asset_key] = []
+                all_assets[asset_key].append(item_id)
+        
+        return all_assets
+    
+    def get_assets_by_collection(self) -> Dict[str, List[str]]:
+        """Get assets grouped by collection."""
+        collection_assets = {}
+        
+        for item in self._items:
+            collection = item.get('collection', 'unknown')
+            assets = list(item.get('assets', {}).keys())
+            
+            if collection not in collection_assets:
+                collection_assets[collection] = set()
+            
+            collection_assets[collection].update(assets)
+        
+        return {
+            collection: sorted(list(assets)) 
+            for collection, assets in collection_assets.items()
+        }
+    
+    def to_products_dict(self) -> Dict[str, Dict[str, Any]]:
+        """Convert collection to products dictionary with detailed metadata."""
+        products = {}
+        
+        for i, item in enumerate(self._items):
+            item_id = item.get('id', f'item_{i}')
+            properties = item.get('properties', {})
+            assets = item.get('assets', {})
+            
+            products[item_id] = {
+                'id': item_id,
+                'collection': item.get('collection', 'unknown'),
+                'datetime': properties.get('datetime', 'unknown'),
+                'cloud_cover': properties.get('eo:cloud_cover'),
+                'geometry': item.get('geometry'),
+                'bbox': item.get('bbox'),
+                'assets': list(assets.keys()),
+                'asset_count': len(assets),
+                'provider': self.provider,
+                'properties': properties
+            }
+        
+        return products
+    
+    def get_common_bands(self, min_occurrence: float = 0.5) -> List[str]:
+        """Get commonly available bands/assets across the collection."""
+        if not self._items:
+            return []
+        
+        asset_counts = {}
+        total_items = len(self._items)
+        
+        for item in self._items:
+            assets = item.get('assets', {})
+            for asset_key in assets.keys():
+                asset_counts[asset_key] = asset_counts.get(asset_key, 0) + 1
+        
+        min_count = int(total_items * min_occurrence)
+        common_bands = [
+            asset for asset, count in asset_counts.items() 
+            if count >= min_count
+        ]
+        
+        return sorted(common_bands)
+    
+    # ========================================
+    # PATTERN MATCHING AND FILTERING
+    # ========================================
+    
+    def get_assets_by_pattern(self, pattern: str, match_type: str = "extension") -> List[str]:
+        """Get asset names that match the specified pattern."""
         matching_assets = []
         
         for item in self._items:
@@ -83,269 +416,54 @@ class STACItemCollection:
     
     def _asset_matches_pattern(self, asset_key: str, asset_data: Dict, 
                               pattern: str, match_type: str) -> bool:
-        """
-        🔧 FIXED: Check if an asset matches the specified pattern.
-        
-        Args:
-            asset_key: Asset name/key
-            asset_data: Asset metadata dictionary
-            pattern: Pattern to match
-            match_type: Type of matching to perform
-            
-        Returns:
-            True if asset matches the pattern
-        """
+        """Check if an asset matches the specified pattern."""
         pattern_lower = pattern.lower()
         
         if match_type == "extension":
-            # Check actual file extension from URL
             return self._check_extension_match(asset_data, pattern_lower)
-        
         elif match_type == "mime":
-            # Check MIME type
             return self._check_mime_match(asset_data, pattern_lower)
-        
         elif match_type == "name":
-            # Check asset name (original behavior)
             return pattern_lower in asset_key.lower()
-        
         elif match_type == "url":
-            # Check full URL
             asset_url = asset_data.get('href', '')
             return pattern_lower in asset_url.lower()
-        
         else:
-            # Default to extension matching
             return self._check_extension_match(asset_data, pattern_lower)
     
     def _check_extension_match(self, asset_data: Dict, pattern: str) -> bool:
-        """
-        🔧 FIXED: Check if asset's actual file extension matches pattern.
-        
-        Args:
-            asset_data: Asset metadata dictionary
-            pattern: Pattern to match (e.g., ".xml", ".jp2")
-            
-        Returns:
-            True if extension matches
-        """
+        """Check if asset's actual file extension matches pattern."""
         asset_url = asset_data.get('href', '')
         if not asset_url:
             return False
         
         try:
-            # Parse URL to get the path
             parsed_url = urlparse(asset_url)
             url_path = parsed_url.path
-            
-            # Extract file extension
             file_extension = Path(url_path).suffix.lower()
-            
-            # Remove leading dot from pattern if present for comparison
             pattern_clean = pattern.lstrip('.')
             extension_clean = file_extension.lstrip('.')
-            
             return extension_clean == pattern_clean or pattern in file_extension
-            
         except Exception:
             return False
     
     def _check_mime_match(self, asset_data: Dict, pattern: str) -> bool:
-        """
-        🔧 FIXED: Check if asset's MIME type matches pattern.
-        
-        Args:
-            asset_data: Asset metadata dictionary
-            pattern: Pattern to match (e.g., "image/tiff", "application/xml")
-            
-        Returns:
-            True if MIME type matches
-        """
+        """Check if asset's MIME type matches pattern."""
         asset_type = asset_data.get('type', '').lower()
         return pattern in asset_type
     
-    def _get_complete_items(self) -> List[Dict]:
-        """
-        🔧 FIXED: Get complete items using fallback strategy if available.
-        
-        Returns:
-            List of complete items (with fallback if possible)
-        """
-        # Try to access the parent search object to get complete items
-        if hasattr(self, '_parent_search') and self._parent_search:
-            try:
-                # Get all items from the parent search object
-                complete_collection = self._parent_search.get_all_items()
-                return complete_collection._items
-            except Exception:
-                pass
-        
-        # Fallback to current items if no parent search available
-        return self._items
-
-    def _calculate_comprehensive_stats(self, items: List[Dict]) -> Dict[str, Any]:
-        """
-        🔧 FIXED: Calculate comprehensive statistics from complete items.
-        
-        Args:
-            items: List of items to analyze
-            
-        Returns:
-            Dictionary with comprehensive statistics
-        """
-        # Collect all assets across all items
-        all_assets = set()
-        asset_counts = {}
-        collections = set()
-        dates = []
-        cloud_covers = []
-        
-        for item in items:
-            # Collections
-            collection = item.get('collection', '')
-            if collection:
-                collections.add(collection)
-            
-            # Assets
-            assets = item.get('assets', {})
-            for asset_key in assets.keys():
-                all_assets.add(asset_key)
-                asset_counts[asset_key] = asset_counts.get(asset_key, 0) + 1
-            
-            # Dates
-            properties = item.get('properties', {})
-            datetime_str = properties.get('datetime', '')
-            if datetime_str:
-                try:
-                    if PANDAS_AVAILABLE:
-                        dates.append(pd.to_datetime(datetime_str))
-                    else:
-                        dates.append(datetime_str)
-                except:
-                    pass
-            
-            # Cloud cover
-            cloud_cover = properties.get('eo:cloud_cover')
-            if cloud_cover is not None:
-                cloud_covers.append(cloud_cover)
-        
-        # Calculate date range
-        if dates and PANDAS_AVAILABLE:
-            date_range = {
-                'start': min(dates).strftime('%Y-%m-%d'),
-                'end': max(dates).strftime('%Y-%m-%d')
-            }
-        elif dates:
-            date_range = {'start': min(dates), 'end': max(dates)}
-        else:
-            date_range = {'start': 'unknown', 'end': 'unknown'}
-        
-        # Find common assets (present in most items)
-        total_items = len(items)
-        common_threshold = total_items * 0.8  # Assets present in 80% of items
-        common_assets = [asset for asset, count in asset_counts.items() if count >= common_threshold]
-        
-        # Cloud cover statistics
-        cloud_stats = None
-        if cloud_covers:
-            cloud_stats = {
-                'min': min(cloud_covers),
-                'max': max(cloud_covers),
-                'mean': sum(cloud_covers) / len(cloud_covers),
-                'count': len(cloud_covers)
-            }
-        
-        # Extension and MIME type analysis
-        extensions = self._analyze_extensions(items)
-        mime_types = self._analyze_mime_types(items)
-        
-        return {
-            'provider': self.provider,
-            'total_items': total_items,
-            'unique_collections': list(collections),
-            'date_range': date_range,
-            'all_assets': sorted(list(all_assets)),
-            'common_assets': sorted(common_assets),
-            'available_extensions': extensions,
-            'available_mime_types': mime_types,
-            'cloud_cover': cloud_stats
-        }
-
-    def _analyze_extensions(self, items: List[Dict]) -> Dict[str, List[str]]:
-        """Analyze file extensions from complete items."""
-        extensions_map = {}
-        
-        for item in items:
-            assets = item.get('assets', {})
-            for asset_key, asset_data in assets.items():
-                asset_url = asset_data.get('href', '')
-                if asset_url:
-                    try:
-                        parsed_url = urlparse(asset_url)
-                        file_extension = Path(parsed_url.path).suffix.lower()
-                        
-                        if file_extension:
-                            if file_extension not in extensions_map:
-                                extensions_map[file_extension] = []
-                            if asset_key not in extensions_map[file_extension]:
-                                extensions_map[file_extension].append(asset_key)
-                    except Exception:
-                        continue
-        
-        return extensions_map
-
-    def _analyze_mime_types(self, items: List[Dict]) -> Dict[str, List[str]]:
-        """Analyze MIME types from complete items."""
-        mime_types_map = {}
-        
-        for item in items:
-            assets = item.get('assets', {})
-            for asset_key, asset_data in assets.items():
-                mime_type = asset_data.get('type', '')
-                if mime_type:
-                    if mime_type not in mime_types_map:
-                        mime_types_map[mime_type] = []
-                    if asset_key not in mime_types_map[mime_type]:
-                        mime_types_map[mime_type].append(asset_key)
-        
-        return mime_types_map
-
-
     def get_assets_by_extension(self, extension: str) -> List[str]:
-        """
-        🆕 NEW: Convenience method to get assets by file extension.
-        
-        Args:
-            extension: File extension (e.g., "xml", "jp2", "tif")
-            
-        Returns:
-            List of asset names with the specified extension
-        """
-        # Ensure extension starts with dot
+        """Convenience method to get assets by file extension."""
         if not extension.startswith('.'):
             extension = '.' + extension
-        
         return self.get_assets_by_pattern(extension, match_type="extension")
     
     def get_assets_by_mime_type(self, mime_type: str) -> List[str]:
-        """
-        🆕 NEW: Convenience method to get assets by MIME type.
-        
-        Args:
-            mime_type: MIME type (e.g., "image/tiff", "application/xml")
-            
-        Returns:
-            List of asset names with the specified MIME type
-        """
+        """Convenience method to get assets by MIME type."""
         return self.get_assets_by_pattern(mime_type, match_type="mime")
     
     def list_asset_extensions(self) -> Dict[str, List[str]]:
-        """
-        🆕 NEW: List all unique file extensions and which assets have them.
-        
-        Returns:
-            Dictionary mapping extensions to asset names
-        """
+        """List all unique file extensions and which assets have them."""
         extensions_map = {}
         
         for item in self._items:
@@ -368,108 +486,246 @@ class STACItemCollection:
         
         return extensions_map
     
-    def list_asset_mime_types(self) -> Dict[str, List[str]]:
-        """
-        🆕 NEW: List all unique MIME types and which assets have them.
-        
-        Returns:
-            Dictionary mapping MIME types to asset names
-        """
-        mime_types_map = {}
+    # ========================================
+    # FILTERING FUNCTIONS
+    # ========================================
+    
+    def filter_by_cloud_cover(self, max_cloud_cover: float) -> 'STACItemCollection':
+        """Filter items by cloud cover percentage."""
+        filtered_items = []
         
         for item in self._items:
-            assets = item.get('assets', {})
-            
-            for asset_key, asset_data in assets.items():
-                mime_type = asset_data.get('type', '')
-                if mime_type:
-                    if mime_type not in mime_types_map:
-                        mime_types_map[mime_type] = []
-                    if asset_key not in mime_types_map[mime_type]:
-                        mime_types_map[mime_type].append(asset_key)
+            cloud_cover = item.get('properties', {}).get('eo:cloud_cover', 0)
+            if cloud_cover <= max_cloud_cover:
+                filtered_items.append(item)
         
-        return mime_types_map
+        return STACItemCollection(filtered_items, provider=self.provider)
     
-    def debug_asset_info(self, pattern: str = None) -> Dict[str, Any]:
+    def filter_by_date_range(self, start_date: Optional[str] = None, 
+                        end_date: Optional[str] = None, 
+                        days_back: Optional[int] = None,
+                        auto_fix_dates: bool = True) -> 'STACItemCollection':
         """
-        🆕 NEW: Debug information about assets and pattern matching.
+        🔧 ENHANCED: Filter items by date range with automatic invalid date correction.
         
         Args:
-            pattern: Optional pattern to test matching for
+            start_date: Start date (YYYY-MM-DD format) - optional if using days_back
+            end_date: End date (YYYY-MM-DD format) - optional if using days_back  
+            days_back: Number of days back from today - alternative to start_date/end_date
+            auto_fix_dates: Whether to automatically fix invalid dates (default: True)
             
         Returns:
-            Debug information dictionary
+            New STACItemCollection with filtered items
+            
+        Examples:
+            # Using date range with auto-correction
+            filtered = collection.filter_by_date_range("2024-01-01", "2024-02-31")  # Auto-fixes to 2024-02-29
+            
+            # Using days back (last 30 days)
+            filtered = collection.filter_by_date_range(days_back=30)
+            
+            # Disable auto-correction
+            filtered = collection.filter_by_date_range("2024-01-01", "2024-02-31", auto_fix_dates=False)
         """
-        debug_info = {
-            'total_items': len(self._items),
-            'extensions': self.list_asset_extensions(),
-            'mime_types': self.list_asset_mime_types(),
-        }
         
-        if pattern:
-            debug_info['pattern_results'] = {
-                'pattern': pattern,
-                'extension_match': self.get_assets_by_pattern(pattern, "extension"),
-                'mime_match': self.get_assets_by_pattern(pattern, "mime"),
-                'name_match': self.get_assets_by_pattern(pattern, "name"),
-                'url_match': self.get_assets_by_pattern(pattern, "url")
+        # Validate input parameters
+        if not start_date and not end_date and not days_back:
+            print("⚠️ No filtering parameters provided. Returning original collection.")
+            return STACItemCollection(self._items.copy(), provider=self.provider)
+        
+        # Calculate date range based on parameters
+        try:
+            if days_back is not None:
+                # Option 1: Use days_back parameter
+                if start_date:
+                    # days_back from specific start_date
+                    start_dt = self._parse_date(start_date)
+                    end_dt = start_dt + timedelta(days=days_back)
+                else:
+                    # days_back from today
+                    end_dt = datetime.now()
+                    start_dt = end_dt - timedelta(days=days_back)
+            else:
+                # Option 2: Use start_date and end_date
+                start_dt = self._parse_date(start_date) if start_date else datetime.min
+                end_dt = self._parse_date(end_date) if end_date else datetime.max
+            
+            # Convert to date objects for comparison
+            start_date_obj = start_dt.date()
+            end_date_obj = end_dt.date()
+            
+            print(f"🗓️ Filtering items from {start_date_obj} to {end_date_obj}")
+            
+        except ValueError as e:
+            if auto_fix_dates:
+                print(f"❌ Date parsing error: {e}")
+                print("💡 Use YYYY-MM-DD format for dates or set auto_fix_dates=True")
+            else:
+                print(f"❌ Date parsing error with auto_fix_dates=False: {e}")
+            return STACItemCollection([], provider=self.provider)
+        
+        # Filter items
+        filtered_items = []
+        processed_items = 0
+        
+        for item in self._items:
+            item_datetime = item.get('properties', {}).get('datetime', '')
+            if item_datetime:
+                try:
+                    # Parse item datetime
+                    item_dt = self._parse_item_datetime(item_datetime)
+                    item_date = item_dt.date()
+                    
+                    # Check if item falls within date range
+                    if start_date_obj <= item_date <= end_date_obj:
+                        filtered_items.append(item)
+                    
+                    processed_items += 1
+                    
+                except Exception as e:
+                    # Skip items with invalid datetime
+                    continue
+        
+        print(f"✅ Filtered {len(filtered_items)} items from {processed_items} total items")
+        
+        return STACItemCollection(filtered_items, provider=self.provider)
+    
+    def _parse_date(self, date_str: str) -> datetime:
+        """
+        🔧 FIXED: Parse date string with automatic invalid date correction.
+        
+        Args:
+            date_str: Date string in YYYY-MM-DD format
+            
+        Returns:
+            datetime object with corrected date if needed
+            
+        Raises:
+            ValueError: If date string format or month is invalid
+        """
+        import calendar
+        import re
+        
+        if not date_str:
+            raise ValueError("Date string cannot be empty")
+        
+        # First try direct parsing for valid dates
+        date_formats = [
+            '%Y-%m-%d',
+            '%Y/%m/%d', 
+            '%Y-%m-%dT%H:%M:%S',
+            '%Y-%m-%dT%H:%M:%SZ',
+            '%Y-%m-%dT%H:%M:%S.%fZ'
+        ]
+        
+        for fmt in date_formats:
+            try:
+                return datetime.strptime(date_str, fmt)
+            except ValueError:
+                continue
+        
+        # If direct parsing fails, try to fix invalid dates
+        try:
+            # Handle YYYY-MM-DD format with potential invalid day
+            match = re.match(r"^(\d{4})-(\d{1,2})-(\d{1,2})$", date_str)
+            if match:
+                year, month, day = map(int, match.groups())
+                
+                # Validate month
+                if month < 1 or month > 12:
+                    raise ValueError(f"Invalid month: {month}. Must be 1-12.")
+                
+                # Get last valid day of the month
+                last_day = calendar.monthrange(year, month)[1]
+                
+                if day > last_day:
+                    print(f"⚠️ Invalid date {date_str}: Day {day} doesn't exist in {calendar.month_name[month]} {year}")
+                    print(f"🔧 Auto-correcting to {year}-{month:02d}-{last_day:02d}")
+                    day = last_day
+                
+                return datetime(year, month, day)
+        
+        except Exception:
+            pass
+        
+        # Try pandas if available as last resort
+        if PANDAS_AVAILABLE:
+            try:
+                return pd.to_datetime(date_str).to_pydatetime()
+            except Exception:
+                pass
+        
+        raise ValueError(f"Unable to parse date: '{date_str}'. Use YYYY-MM-DD format.")
+    
+    def _parse_item_datetime(self, datetime_str: str) -> datetime:
+        """Parse item datetime with robust error handling."""
+        if PANDAS_AVAILABLE:
+            try:
+                return pd.to_datetime(datetime_str).to_pydatetime()
+            except Exception:
+                pass
+        
+        datetime_formats = [
+            '%Y-%m-%dT%H:%M:%S.%fZ',
+            '%Y-%m-%dT%H:%M:%SZ',
+            '%Y-%m-%dT%H:%M:%S',
+            '%Y-%m-%d'
+        ]
+        
+        for fmt in datetime_formats:
+            try:
+                return datetime.strptime(datetime_str, fmt)
+            except ValueError:
+                continue
+        
+        raise ValueError(f"Unable to parse item datetime: '{datetime_str}'")
+    
+    def get_unique_collections(self) -> List[str]:
+        """Get list of unique collection names."""
+        collections = set()
+        for item in self._items:
+            collection = item.get('collection', '')
+            if collection:
+                collections.add(collection)
+        return list(collections)
+    
+    def get_date_range(self) -> Dict[str, str]:
+        """Get date range of items in collection."""
+        dates = []
+        for item in self._items:
+            item_datetime = item.get('properties', {}).get('datetime', '')
+            if item_datetime:
+                try:
+                    dates.append(self._parse_item_datetime(item_datetime))
+                except Exception:
+                    continue
+        
+        if dates:
+            return {
+                'start': min(dates).strftime('%Y-%m-%d'),
+                'end': max(dates).strftime('%Y-%m-%d')
             }
         
-        return debug_info
+        return {'start': 'unknown', 'end': 'unknown'}
     
-    def get_all_urls(self, asset_keys: Optional[List[str]] = None, 
-                    signed: Optional[bool] = None) -> Dict[str, Dict[str, str]]:
-        """
-        Get URLs from all items in the collection.
-        
-        Args:
-            asset_keys: Specific assets to get URLs for (optional)
-            signed: Override signing behavior (optional)
-            
-        Returns:
-            Dictionary of {item_id: {asset_key: url}}
-        """
-        all_urls = {}
-        
-        for item in self._items:
-            from .items import STACItem
-            stac_item = STACItem(item, provider=self.provider)
-            item_id = item.get('id', f'item_{len(all_urls)}')
-            
-            if asset_keys:
-                # Get specific assets
-                item_urls = {}
-                for asset_key in asset_keys:
-                    if stac_item.has_asset(asset_key):
-                        item_urls[asset_key] = stac_item.get_asset_url(asset_key, signed=signed)
-                all_urls[item_id] = item_urls
-            else:
-                # Get all assets
-                all_urls[item_id] = stac_item.get_all_asset_urls(signed=signed)
-        
-        return all_urls
+    # ========================================
+    # PANDAS/GEOPANDAS DEPENDENT FUNCTIONS
+    # ========================================
     
     def to_dataframe(self, include_geometry: bool = True) -> 'pd.DataFrame':
-        """
-        Convert collection to pandas/geopandas DataFrame.
-        
-        Args:
-            include_geometry: Include spatial geometry (requires geopandas)
-            
-        Returns:
-            DataFrame with item metadata
-        """
+        """Convert collection to pandas/geopandas DataFrame."""
         if not PANDAS_AVAILABLE:
-            raise ImportError("pandas is required for to_dataframe(). Install with: pip install pandas")
+            raise ImportError(
+                "❌ pandas is required for to_dataframe().\n"
+                "💡 Install with: pip install pandas"
+            )
         
-        # Use cached dataframe if available
         if self._cached_dataframe is not None:
             return self._cached_dataframe
         
         # Build DataFrame from items
         df_data = []
         for item in self._items:
-            # Flatten item properties
             row = {
                 'id': item.get('id', ''),
                 'collection': item.get('collection', ''),
@@ -480,7 +736,7 @@ class STACItemCollection:
             # Add all properties
             properties = item.get('properties', {})
             for key, value in properties.items():
-                if key not in row:  # Avoid duplicates
+                if key not in row:
                     row[key] = value
             
             # Add geometry info
@@ -505,10 +761,8 @@ class STACItemCollection:
         # Create DataFrame
         if include_geometry and GEOPANDAS_AVAILABLE:
             try:
-                import geopandas as gpd
                 from shapely.geometry import shape
                 
-                # Convert to GeoDataFrame with geometry
                 geometries = []
                 for item in self._items:
                     geom = item.get('geometry')
@@ -519,72 +773,62 @@ class STACItemCollection:
                 
                 df = gpd.GeoDataFrame(df_data, geometry=geometries)
             except Exception:
-                # Fallback to regular DataFrame
                 df = pd.DataFrame(df_data)
+                if include_geometry:
+                    print("⚠️ Failed to create GeoDataFrame, falling back to regular DataFrame")
         else:
             df = pd.DataFrame(df_data)
+            if include_geometry and not GEOPANDAS_AVAILABLE:
+                print("💡 For geometry support, install: pip install geopandas")
         
-        # Cache for future use
         self._cached_dataframe = df
-        
         return df
     
-    def export_urls_json(self, filename: str, asset_keys: Optional[List[str]] = None, 
-    signed: Optional[bool] = None, use_fallback: bool = True):
-        """
-        🔧 FIXED: Export all URLs to JSON file for external processing.
+    def to_geodataframe(self) -> 'gpd.GeoDataFrame':
+        """Convert collection to geopandas GeoDataFrame."""
+        if not GEOPANDAS_AVAILABLE:
+            raise ImportError(
+                "❌ geopandas is required for to_geodataframe().\n"
+                "💡 Install with: pip install geopandas"
+            )
         
-        Args:
-            filename: Output JSON filename
-            asset_keys: Specific assets to export (optional)
-            signed: Whether to sign URLs (optional, auto-detected by provider)
-            use_fallback: Whether to use complete collection from fallback (default: True)
-        """
-        # 🔧 FIXED: Get complete items using fallback strategy
-        if use_fallback:
-            # Try to get complete items from parent search object if available
-            items_to_process = self._get_complete_items()
-        else:
-            # Use only the items currently in the collection
-            items_to_process = self._items
-        
-        # Process URLs from all items
+        return self.to_dataframe(include_geometry=True)
+    
+    # ========================================
+    # EXPORT AND UTILITY FUNCTIONS
+    # ========================================
+    
+    def export_urls_json(self, filename: str, asset_keys: Optional[List[str]] = None):
+        """Export all URLs to JSON file for external processing."""
         all_urls = {}
         processed_count = 0
         
-        for item in items_to_process:
-            from .items import STACItem
+        from .items import STACItem
+        for item in self._items:
             stac_item = STACItem(item, provider=self.provider)
             item_id = item.get('id', f'item_{processed_count}')
             
             try:
                 if asset_keys:
-                    # Get specific assets
                     item_urls = {}
                     for asset_key in asset_keys:
                         if stac_item.has_asset(asset_key):
-                            item_urls[asset_key] = stac_item.get_asset_url(asset_key, signed=signed)
+                            item_urls[asset_key] = stac_item.get_asset_url(asset_key)
                     all_urls[item_id] = item_urls
                 else:
-                    # Get all assets
-                    all_urls[item_id] = stac_item.get_all_asset_urls(signed=signed)
+                    all_urls[item_id] = stac_item.get_all_asset_urls()
                 
                 processed_count += 1
-                
             except Exception as e:
                 print(f"⚠️ Error processing item {item_id}: {e}")
                 continue
         
-        # 🔧 FIXED: Enhanced export data with complete information
         export_data = {
             'provider': self.provider,
-            'total_items': len(items_to_process),
+            'total_items': len(self._items),
             'processed_items': processed_count,
-            'exported_at': pd.Timestamp.now().isoformat() if PANDAS_AVAILABLE else 'unknown',
+            'exported_at': datetime.now().isoformat(),
             'asset_keys': asset_keys or 'all',
-            'signed_urls': signed,
-            'fallback_used': use_fallback and len(items_to_process) > len(self._items),
-            'original_count': len(self._items),
             'urls': all_urls
         }
         
@@ -592,188 +836,55 @@ class STACItemCollection:
             json.dump(export_data, f, indent=2)
         
         print(f"✅ Exported {processed_count} items to {filename}")
-        if use_fallback and len(items_to_process) > len(self._items):
-            print(f"🔄 Used fallback strategy: {len(self._items)} → {len(items_to_process)} items")
-        print(f"💡 Load with: import json; data = json.load(open('{filename}'))")
-
     
-    def filter_by_cloud_cover(self, max_cloud_cover: float) -> 'STACItemCollection':
-        """
-        Filter items by cloud cover percentage.
-        
-        Args:
-            max_cloud_cover: Maximum cloud cover percentage (0-100)
-            
-        Returns:
-            New STACItemCollection with filtered items
-        """
-        filtered_items = []
-        
-        for item in self._items:
-            cloud_cover = item.get('properties', {}).get('eo:cloud_cover', 0)
-            if cloud_cover <= max_cloud_cover:
-                filtered_items.append(item)
-        
-        return STACItemCollection(filtered_items, provider=self.provider)
-    
-    def filter_by_date_range(self, start_date: str, end_date: str) -> 'STACItemCollection':
-        """
-        Filter items by date range.
-        
-        Args:
-            start_date: Start date (YYYY-MM-DD format)
-            end_date: End date (YYYY-MM-DD format)
-            
-        Returns:
-            New STACItemCollection with filtered items
-        """
-        if not PANDAS_AVAILABLE:
-            print("⚠️ pandas required for date filtering. Install with: pip install pandas")
-            return self
-        
-        filtered_items = []
-        
-        for item in self._items:
-            item_datetime = item.get('properties', {}).get('datetime', '')
-            if item_datetime:
-                try:
-                    item_date = pd.to_datetime(item_datetime).date()
-                    start = pd.to_datetime(start_date).date()
-                    end = pd.to_datetime(end_date).date()
-                    
-                    if start <= item_date <= end:
-                        filtered_items.append(item)
-                except Exception:
-                    continue
-        
-        return STACItemCollection(filtered_items, provider=self.provider)
-    
-    def get_unique_collections(self) -> List[str]:
-        """
-        Get list of unique collection names in this collection.
-        
-        Returns:
-            List of unique collection names
-        """
-        collections = set()
-        for item in self._items:
-            collection = item.get('collection', '')
-            if collection:
-                collections.add(collection)
-        return list(collections)
-    
-    def get_date_range(self) -> Dict[str, str]:
-        """
-        Get date range of items in collection.
-        
-        Returns:
-            Dictionary with 'start' and 'end' dates
-        """
-        if not PANDAS_AVAILABLE:
-            return {'start': 'unknown', 'end': 'unknown'}
-        
-        dates = []
-        for item in self._items:
-            item_datetime = item.get('properties', {}).get('datetime', '')
-            if item_datetime:
-                try:
-                    dates.append(pd.to_datetime(item_datetime))
-                except Exception:
-                    continue
-        
-        if dates:
-            return {
-                'start': min(dates).strftime('%Y-%m-%d'),
-                'end': max(dates).strftime('%Y-%m-%d')
-            }
-        
-        return {'start': 'unknown', 'end': 'unknown'}
-    
-    def get_details(self) -> Dict[str, Any]:
-        """
-        Get comprehensive statistics about the collection.
-        
-        Returns:
-            Dictionary with collection statistics
-        """
-        stats = {
-            'total_items': len(self._items),
-            'provider': self.provider,
-            'unique_collections': self.get_unique_collections(),
-            'date_range': self.get_date_range(),
-            'available_extensions': self.list_asset_extensions(),
-            'available_mime_types': self.list_asset_mime_types()
-        }
-        
-        # Cloud cover statistics
-        if PANDAS_AVAILABLE:
-            cloud_covers = []
-            for item in self._items:
-                cloud_cover = item.get('properties', {}).get('eo:cloud_cover')
-                if cloud_cover is not None:
-                    cloud_covers.append(cloud_cover)
-            
-            if cloud_covers:
-                stats['cloud_cover'] = {
-                    'min': min(cloud_covers),
-                    'max': max(cloud_covers),
-                    'mean': sum(cloud_covers) / len(cloud_covers),
-                    'count': len(cloud_covers)
-                }
-        
-        return stats
-    
-    def print_collection_summary(self, use_fallback: bool = True):
-        """
-        🔧 FIXED: Print a comprehensive summary of the complete collection.
-        
-        Args:
-            use_fallback: Whether to use complete collection from fallback (default: True)
-        """
-        # 🔧 FIXED: Get complete items using fallback strategy
-        if use_fallback:
-            items_to_analyze = self._get_complete_items()
-        else:
-            items_to_analyze = self._items
-        
-        # Calculate statistics from complete items
-        stats = self._calculate_comprehensive_stats(items_to_analyze)
+    def print_collection_summary(self):
+        """Print a comprehensive summary of the collection."""
+        date_range = self.get_date_range()
+        extensions = self.list_asset_extensions()
+        common_bands = self.get_common_bands()
+        available_bands = self.get_available_bands()
         
         print(f"📦 STAC Collection Summary")
         print(f"=" * 50)
-        print(f"🔗 Provider: {stats['provider']}")
-        print(f"📊 Total Items: {stats['total_items']}")
+        print(f"🔗 Provider: {self.provider}")
+        print(f"📊 Total Items: {len(self._items)}")
+        print(f"📅 Date Range: {date_range['start']} to {date_range['end']}")
+        print(f"📋 Collections: {self.get_unique_collections()}")
+        print(f"🎯 Available Bands ({len(available_bands)}): {available_bands[:10]}{'...' if len(available_bands) > 10 else ''}")
+        print(f"🔗 Common Bands: {common_bands[:10]}{'...' if len(common_bands) > 10 else ''}")
         
-        if use_fallback and stats['total_items'] > len(self._items):
-            print(f"🔄 Fallback Used: {len(self._items)} → {stats['total_items']} items")
-        
-        print(f"📁 Collections: {stats['unique_collections']}")
-        print(f"📅 Date Range: {stats['date_range']['start']} to {stats['date_range']['end']}")
-        
-        # Cloud cover statistics
-        if 'cloud_cover' in stats and stats['cloud_cover']:
-            cc = stats['cloud_cover']
-            print(f"☁️ Cloud Cover: {cc['min']:.1f}% - {cc['max']:.1f}% (avg: {cc['mean']:.1f}%)")
-        
-        # Asset information
-        extensions = stats['available_extensions']
-        mime_types = stats['available_mime_types']
-        
-        print(f"🎯 Available Assets ({len(stats['all_assets'])}): {stats['all_assets'][:10]}{'...' if len(stats['all_assets']) > 10 else ''}")
-        print(f"🔗 Common Assets: {stats['common_assets']}")
-        
-        # Extension breakdown
         print(f"\n📋 File Extensions:")
-        for ext, assets in list(extensions.items())[:5]:  # Show top 5
+        for ext, assets in list(extensions.items())[:5]:
             print(f"  {ext}: {len(assets)} assets")
         
-        # Usage examples
         print(f"\n💡 Usage Examples:")
-        print(f"  # Export all URLs: collection.export_urls_json('urls.json')")
-        print(f"  # Get specific assets: collection.get_assets_by_extension('tif')")
-        print(f"  # Filter by cloud cover: collection.filter_by_cloud_cover(20)")
-        print(f"  # Convert to DataFrame: df = collection.to_dataframe()")
-
+        print(f"  # Get available bands: bands = collection.get_available_bands()")
+        print(f"  # Get all URLs: urls = collection.get_all_urls()")
+        print(f"  # Get band URLs: urls = collection.get_band_urls(['B04', 'B03', 'B02'])")
+        print(f"  # Get image URLs: urls = collection.get_band_urls(asset_type='image')")
+        print(f"  # Simple products: products = collection.to_simple_products_list(include_urls=True)")
+        
+        # Show dependency status
+        print(f"\n📦 Optional Dependencies:")
+        print(f"  pandas: {'✅ Available' if PANDAS_AVAILABLE else '❌ Not installed (pip install pandas)'}")
+        print(f"  geopandas: {'✅ Available' if GEOPANDAS_AVAILABLE else '❌ Not installed (pip install geopandas)'}")
+        print(f"  geojson: {'✅ Available' if GEOJSON_AVAILABLE else '❌ Not installed (pip install geojson)'}")
+    
+    def check_dependencies(self):
+        """Check status of optional dependencies."""
+        deps = {
+            'pandas': PANDAS_AVAILABLE,
+            'geopandas': GEOPANDAS_AVAILABLE,
+            'geojson': GEOJSON_AVAILABLE
+        }
+        
+        print("📦 Dependency Status:")
+        for dep, available in deps.items():
+            status = "✅ Available" if available else "❌ Not installed"
+            install_cmd = f"pip install {dep}" if not available else ""
+            print(f"  {dep}: {status} {install_cmd}")
+        
+        return deps
     
     def __repr__(self):
         """String representation of the collection."""
@@ -781,5 +892,5 @@ class STACItemCollection:
     
     def __str__(self):
         """Human-readable string representation."""
-        stats = self.get_details()
-        return f"STACItemCollection: {len(self._items)} items from {self.provider} ({stats['date_range']['start']} to {stats['date_range']['end']})"
+        stats = self.get_date_range()
+        return f"STACItemCollection: {len(self._items)} items from {self.provider} ({stats['start']} to {stats['end']})"
