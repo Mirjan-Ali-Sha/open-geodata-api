@@ -43,13 +43,6 @@ For Complete Installation (Recommended)
 
 Includes all optional dependencies: spatial analysis + raster I/O
 
-CLI Installation
-~~~~~~~~~~~~~~~~
-For command-line interface (CLI) usage, install the CLI package:
-
-.. code-block:: bash
-
-   pip install open-geodata-api[cli]
 
 None Dependencies
 ~~~~~~~~~~~~~~~~~
