@@ -60,7 +60,9 @@ Requirements are `requests`, `planetary-computer`, `tqdm`, and `click` install t
 
 .. code-block:: bash
 
-   pip install open-geodata-api[none]
+   pip install open-geodata-api[none] --no-deps
+   or
+   pip install open-geodata-api --no-deps
 
 Development Installation
 ------------------------
