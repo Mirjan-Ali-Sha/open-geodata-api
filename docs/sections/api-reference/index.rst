@@ -11,6 +11,13 @@ Complete reference documentation for all classes, functions, and modules.
    utility-functions
    factory-functions
 
+Downloadable Notebook
+---------------------
+
+You can download the full Jupyter notebook of API examples here:
+
+`Download Test_Open_GeoData_API_References.ipynb <https://github.com/Mirjan-Ali-Sha/open-geodata-api/raw/main/Test_Open_GeoData_API_References.ipynb>`_
+
 Quick Navigation
 ----------------
 
