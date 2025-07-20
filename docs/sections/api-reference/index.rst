@@ -10,26 +10,31 @@ Complete reference documentation for all classes, functions, and modules.
    client-classes
    utility-functions
    factory-functions
+   usage-patterns
 
 Quick Navigation
 ----------------
 
 **Core Classes**
+
 - :class:`STACItem` - Individual satellite scenes
 - :class:`STACItemCollection` - Collections of scenes
 - :class:`STACAsset` - Individual data files
 - :class:`STACSearch` - Search result containers
 
 **Client Classes**  
+
 - :class:`PlanetaryComputerCollections` - Microsoft PC client
 - :class:`EarthSearchCollections` - Element84 ES client
 
 **Utility Functions**
+
 - :func:`filter_by_cloud_cover` - Quality filtering
 - :func:`download_datasets` - Intelligent downloading
 - :func:`create_download_summary` - Progress reporting
 
 **Factory Functions**
+
 - :func:`planetary_computer` - Create PC client
 - :func:`earth_search` - Create ES client
 - :func:`get_clients` - Get both clients
