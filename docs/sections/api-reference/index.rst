@@ -11,17 +11,6 @@ Complete reference documentation for all classes, functions, and modules.
    utility-functions
    factory-functions
 
-Downloadable Notebook
----------------------
-
-You can download the full Jupyter notebook of API examples here:
-
-- `Download Test_Open_GeoData_API_References.ipynb <https://github.com/Mirjan-Ali-Sha/open-geodata-api/raw/main/Test_Open_GeoData_API_References.ipynb>`_
-
-- `Open in Google Colab <https://colab.research.google.com/github/Mirjan-Ali-Sha/open-geodata-api/blob/main/Test_Open_GeoData_API_References.ipynb>`_
-
-- `Launch Binder <https://mybinder.org/v2/gh/Mirjan-Ali-Sha/open-geodata-api/main?filepath=Test_Open_GeoData_API_References.ipynb>`_
-
 Quick Navigation
 ----------------
 
@@ -92,3 +81,15 @@ Usage Patterns
    
    # Download
    download_results = download_datasets(clear_items, destination="./data/")
+
+Downloadable Notebook of API References Testing:
+-----------------------------------------------
+
+You can download the full Jupyter notebook of API examples here:
+
+- `Download Test Open GeoData API References.ipynb <https://github.com/Mirjan-Ali-Sha/open-geodata-api/raw/main/Test_Open_GeoData_API_References.ipynb>`_
+
+- `Open in Google Colab <https://colab.research.google.com/github/Mirjan-Ali-Sha/open-geodata-api/blob/main/Test_Open_GeoData_API_References.ipynb>`_
+
+- `Launch Binder <https://mybinder.org/v2/gh/Mirjan-Ali-Sha/open-geodata-api/main?filepath=Test_Open_GeoData_API_References.ipynb>`_
+
