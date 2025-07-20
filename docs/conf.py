@@ -167,6 +167,7 @@ html_context = {
 source_suffix = {
     '.rst': None,
     '.md': None,
+    '.html': None,
 }
 
 master_doc = 'index'
