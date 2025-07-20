@@ -153,6 +153,7 @@ html_logo = '_static/icon.png'
 html_favicon = '_static/icon.png'
 html_static_path = ['_static']
 html_css_files = ['custom.css']
+html_extra_path = ['sections/api-reference']
 
 # HTML context
 html_context = {
