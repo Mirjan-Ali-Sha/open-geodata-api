@@ -115,7 +115,7 @@ napoleon_include_init_with_doc = False
 napoleon_include_private_with_doc = False
 copybutton_prompt_text = r">>> |\.\.\. |\$ "
 copybutton_prompt_is_regexp = True
-nbsphinx_execute = 'never'
+nbsphinx_execute = 'always'
 
 
 # Intersphinx mapping
