@@ -96,7 +96,8 @@ extensions = [
     'sphinx.ext.extlinks',
     'sphinx_rtd_theme',
     'myst_parser',  # For markdown support
-    'sphinx_copybutton',
+    'nbsphinx',  # For Jupyter Notebook support
+    'sphinx_copybutton', # For copy button functionality
 ]
 
 # Extension configuration
@@ -114,6 +115,7 @@ napoleon_include_init_with_doc = False
 napoleon_include_private_with_doc = False
 copybutton_prompt_text = r">>> |\.\.\. |\$ "
 copybutton_prompt_is_regexp = True
+nbsphinx_execute = 'never'
 
 
 # Intersphinx mapping

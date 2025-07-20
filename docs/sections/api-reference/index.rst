@@ -10,6 +10,7 @@ Complete reference documentation for all classes, functions, and modules.
    client-classes
    utility-functions
    factory-functions
+   Test_Open_GeoData_API_References
 
 Quick Navigation
 ----------------
