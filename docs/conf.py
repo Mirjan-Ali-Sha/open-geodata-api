@@ -160,6 +160,15 @@ html_static_path = ['_static']
 html_css_files = ['custom.css']
 # html_extra_path = ['sections/api-reference']
 
+# Sidebar configuration
+html_sidebars = {
+    '**': [
+        'globaltoc.html',    # Global TOC instead of local
+        'relations.html',
+        'sourcelink.html', 
+        'searchbox.html'
+    ],
+}
 # HTML context
 html_context = {
     'display_github': True,
