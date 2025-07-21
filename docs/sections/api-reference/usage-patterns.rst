@@ -1,5 +1,6 @@
-Usage Patterns
-==============
+Usage Patterns (API Testing)
+============================
+
 
 The core classes provide STAC-compliant data models for working with satellite imagery metadata and assets.
 
