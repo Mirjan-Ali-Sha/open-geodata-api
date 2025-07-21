@@ -126,7 +126,7 @@ Create a reusable search configuration object.
    es_results = es.search(**config)
 
 create_download_config
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: open_geodata_api.create_download_config
 
@@ -392,7 +392,7 @@ Error Handling Patterns
 -----------------------
 
 Robust Client Creation
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 

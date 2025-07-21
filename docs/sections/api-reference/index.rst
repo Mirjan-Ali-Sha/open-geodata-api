@@ -89,7 +89,7 @@ Usage Patterns
    download_results = download_datasets(clear_items, destination="./data/")
 
 Downloadable Notebook of API References Testing:
------------------------------------------------
+------------------------------------------------
 
 You can download the full Jupyter notebook of API examples here:
 

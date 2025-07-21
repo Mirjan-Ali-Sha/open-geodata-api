@@ -314,7 +314,7 @@ Best Practices
 --------------
 
 Client Configuration
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 

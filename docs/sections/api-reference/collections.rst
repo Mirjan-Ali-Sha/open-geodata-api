@@ -399,7 +399,7 @@ Common Issues and Solutions
    ogapi collections search "land"  # Instead of "landsat-8-specific"
 
 Troubleshooting Tips
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 1. **Check Provider Status**:
 
