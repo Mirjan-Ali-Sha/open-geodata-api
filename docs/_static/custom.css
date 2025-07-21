@@ -1,228 +1,403 @@
-/* Enhanced custom styling for Open Geodata API documentation */
+/* Enhanced custom styling for Open Geodata API documentation with Dual Sidebar Layout */
+/* Layout: 15% Left Sidebar | 65% Main Content | 15% Right Sidebar */
 
-/* 🔥 WIDER CONTENT LAYOUT - Utilize right-side space */
-.wy-nav-content-wrap {
-    margin-left: 300px; /* Keep sidebar width */
-    max-width: none; /* Remove max-width restriction */
-}
+/* ====== BASE LAYOUT CONFIGURATION ====== */
 
-.wy-nav-content {
-    max-width: none; /* Remove default max-width (usually 800px) */
-    padding: 1.618em 3em; /* Add more horizontal padding */
-}
-
-/* Alternative approach - if above doesn't work, try this */
+/* Override default RTD theme layout */
 .wy-grid-for-nav {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Left Sidebar - 15% width */
+.wy-nav-side {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 15% !important;
+    min-width: 200px;
+    max-width: 300px;
+    background: #343131;
+    color: #fcfcfc;
+    overflow-x: hidden;
+    overflow-y: auto;
+    z-index: 200;
+}
+
+/* Main Content Area - 65% width with margins for sidebars */
+.wy-nav-content-wrap {
+    margin-left: 15% !important;
+    margin-right: 15% !important;
+    width: 65% !important;
+    background: #fcfcfc;
+    min-height: 100vh;
     position: relative;
 }
 
-.wy-nav-side {
-    width: 300px; /* Fixed sidebar width */
+.wy-nav-content {
+    padding: 1.618em 2em;
+    height: 100%;
+    max-width: none !important;
+    min-width: 0;
 }
 
-.wy-nav-content-wrap {
-    margin-left: 300px;
-    background: #fcfcfc;
-    min-width: 0; /* Allow content to shrink if needed */
+/* Right Sidebar - 15% width */
+.right-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 15% !important;
+    min-width: 200px;
+    max-width: 300px;
+    height: 100vh;
+    background: #f8f9fa;
+    border-left: 1px solid #e1e4e5;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 90;
+    padding: 20px 15px;
+    box-sizing: border-box;
 }
 
-/* Make content use full available width */
-.document {
+/* ====== RIGHT SIDEBAR STYLING ====== */
+
+.right-sidebar h3 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    font-weight: bold;
+    color: #404040;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e1e4e5;
+}
+
+.right-sidebar .local-toc {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.right-sidebar .local-toc ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.right-sidebar .local-toc li {
+    margin: 8px 0;
+    padding-left: 0;
+    position: relative;
+}
+
+.right-sidebar .local-toc ul ul li {
+    margin-left: 15px;
+    font-size: 12px;
+}
+
+.right-sidebar .local-toc ul ul ul li {
+    margin-left: 30px;
+    font-size: 11px;
+}
+
+.right-sidebar .local-toc a {
+    color: #404040;
+    text-decoration: none;
+    display: block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.right-sidebar .local-toc a:hover {
+    color: #2980b9;
+    background-color: rgba(41, 128, 185, 0.1);
+}
+
+.right-sidebar .local-toc a.current {
+    color: #2980b9;
+    font-weight: bold;
+    background-color: rgba(41, 128, 185, 0.15);
+}
+
+/* Page Relations in Right Sidebar */
+.right-sidebar .page-relations {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e1e4e5;
+}
+
+.right-sidebar .page-relations h4 {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    font-weight: bold;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.right-sidebar .page-relations ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.right-sidebar .page-relations li {
+    margin: 5px 0;
+}
+
+.right-sidebar .page-relations a {
+    color: #666;
+    text-decoration: none;
+    font-size: 12px;
+    padding: 2px 0;
+    display: block;
+}
+
+.right-sidebar .page-relations a:hover {
+    color: #2980b9;
+}
+
+/* ====== LEFT SIDEBAR ENHANCEMENTS ====== */
+
+/* Enhanced 4-level depth styling */
+.wy-menu-vertical li.toctree-l1 > a {
+    font-weight: bold;
+    color: #fcfcfc;
+    background-color: transparent;
+}
+
+.wy-menu-vertical li.toctree-l1.current > a {
+    background-color: #2980b9;
+}
+
+.wy-menu-vertical li.toctree-l2 > a {
+    padding-left: 2em;
+    color: #d9d9d9;
+    font-size: 14px;
+}
+
+.wy-menu-vertical li.toctree-l2.current > a {
+    background-color: rgba(41, 128, 185, 0.3);
+}
+
+.wy-menu-vertical li.toctree-l3 > a {
+    padding-left: 3em;
+    color: #b3b3b3;
+    font-size: 13px;
+}
+
+.wy-menu-vertical li.toctree-l3.current > a {
+    background-color: rgba(41, 128, 185, 0.2);
+}
+
+.wy-menu-vertical li.toctree-l4 > a {
+    padding-left: 4em;
+    color: #999;
+    font-size: 12px;
+}
+
+.wy-menu-vertical li.toctree-l4.current > a {
+    background-color: rgba(41, 128, 185, 0.15);
+}
+
+/* ====== MAIN CONTENT ENHANCEMENTS ====== */
+
+/* Remove max-width restrictions for better content utilization */
+.rst-content, .document, .body, .section {
     max-width: none !important;
     width: 100%;
 }
 
-.section {
-    max-width: none;
-}
-
-/* Adjust container for wider content */
-.container {
-    max-width: none;
-    width: 100%;
-    padding-left: 2em;
-    padding-right: 2em;
-}
-
-/* Enhanced feature grid with wider layout support */
+/* Enhanced feature grid for wider content */
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Slightly wider minimum */
-    gap: 32px; /* More gap for wider layout */
-    margin: 32px 0;
-    padding: 0 16px;
-    max-width: none; /* Remove any width restrictions */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+    padding: 0;
 }
 
 .feature-box {
     background: #f8f9fa;
     border: 1px solid #e9ecef;
-    border-radius: 12px;
-    padding: 28px; /* More padding for wider boxes */
+    border-radius: 8px;
+    padding: 24px;
     text-align: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .feature-box:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .feature-box h3 {
     margin-top: 0;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     color: #2c3e50;
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: 600;
 }
 
 .feature-box p {
     margin-bottom: 0;
     color: #6c757d;
-    line-height: 1.5;
+    line-height: 1.4;
+    font-size: 14px;
 }
 
-/* Enhanced dark theme */
-.wy-body-for-nav .feature-box {
-    background: #2c3e50;
-    border-color: #34495e;
-}
-
-.wy-body-for-nav .feature-box:hover {
-    background: #34495e;
-}
-
-.wy-body-for-nav .feature-box h3 {
-    color: #ecf0f1;
-}
-
-.wy-body-for-nav .feature-box p {
-    color: #bdc3c7;
-}
-
-/* Code block enhancements with wider layout */
+/* Enhanced code block styling */
 .highlight {
     margin: 1em 0;
     border-radius: 6px;
     overflow: hidden;
-    max-width: none; /* Allow code blocks to use full width */
 }
 
 .highlight pre {
     border-radius: 6px;
-    padding: 1em 1.5em; /* More horizontal padding */
+    padding: 1em 1.5em;
+    font-size: 13px;
+    line-height: 1.5;
 }
 
-/* Enhanced admonition styling for wider content */
-.admonition {
-    border-radius: 8px;
-    margin: 20px 0;
-    padding: 20px 24px; /* More padding for wider layout */
-    max-width: none;
-}
-
-.admonition.tip {
-    background-color: #e8f5e8;
-    border-color: #28a745;
-    border-left: 4px solid #28a745;
-}
-
-.admonition.warning {
-    background-color: #fff3cd;
-    border-color: #ffc107;
-    border-left: 4px solid #ffc107;
-}
-
-.admonition.danger {
-    background-color: #f8d7da;
-    border-color: #dc3545;
-    border-left: 4px solid #dc3545;
-}
-
-.admonition.note {
-    background-color: #e7f3ff;
-    border-color: #007bff;
-    border-left: 4px solid #007bff;
-}
-
-/* API documentation enhancements for wider layout */
-.api-section {
-    margin: 24px 0;
-    padding: 24px 28px; /* More horizontal padding */
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-left: 4px solid #007bff;
-    max-width: none;
-}
-
-.method-signature {
-    background: #f1f3f4;
-    padding: 16px 20px; /* More padding */
-    border-radius: 6px;
-    font-family: 'Courier New', monospace;
-    margin: 16px 0;
-    max-width: none;
-    overflow-x: auto; /* Handle long method signatures */
-}
-
-/* Navigation improvements */
-.wy-menu-vertical a {
-    transition: all 0.2s ease;
-}
-
-.wy-menu-vertical a:hover {
-    background-color: rgba(0,0,0,0.05);
-}
-
-/* Table improvements for wider content */
-table {
+/* Enhanced table styling */
+.wy-table-responsive table {
     width: 100%;
-    max-width: none;
     margin: 1em 0;
 }
 
 .wy-table-responsive table td,
 .wy-table-responsive table th {
-    white-space: normal; /* Allow text wrapping in wider tables */
+    white-space: normal;
+    padding: 8px 12px;
+    font-size: 14px;
 }
 
-/* Content sections with better spacing */
-.section {
-    margin-bottom: 2em;
+/* Enhanced admonition styling */
+.admonition {
+    border-radius: 6px;
+    margin: 16px 0;
+    padding: 16px 20px;
+    border-left: 4px solid;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    margin-top: 1.5em;
-    margin-bottom: 0.75em;
+.admonition.tip {
+    background-color: #e8f5e8;
+    border-color: #28a745;
 }
 
-/* Responsive behavior for wider layout */
-@media (min-width: 1200px) {
+.admonition.warning {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+}
+
+.admonition.danger {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+}
+
+.admonition.note {
+    background-color: #e7f3ff;
+    border-color: #007bff;
+}
+
+/* ====== RESPONSIVE DESIGN ====== */
+
+/* Large screens (1400px and up) */
+@media (min-width: 1400px) {
+    .wy-nav-side {
+        min-width: 250px;
+    }
+    
+    .right-sidebar {
+        min-width: 250px;
+    }
+    
     .wy-nav-content {
-        padding: 1.618em 4em; /* Even more padding on larger screens */
+        padding: 1.618em 3em;
+    }
+}
+
+/* Medium screens (1200px to 1399px) */
+@media (max-width: 1399px) and (min-width: 1200px) {
+    .wy-nav-side {
+        min-width: 220px;
+        max-width: 250px;
+    }
+    
+    .right-sidebar {
+        min-width: 220px;
+        max-width: 250px;
+    }
+}
+
+/* Tablet landscape (1024px to 1199px) */
+@media (max-width: 1199px) and (min-width: 1024px) {
+    .wy-nav-side {
+        width: 18% !important;
+        min-width: 200px;
+    }
+    
+    .wy-nav-content-wrap {
+        margin-left: 18% !important;
+        margin-right: 18% !important;
+        width: 64% !important;
+    }
+    
+    .right-sidebar {
+        width: 18% !important;
+        min-width: 200px;
+    }
+}
+
+/* Tablet portrait (768px to 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .wy-nav-side {
+        width: 25% !important;
+        min-width: 200px;
+    }
+    
+    .wy-nav-content-wrap {
+        margin-left: 25% !important;
+        margin-right: 0 !important;
+        width: 75% !important;
+    }
+    
+    .right-sidebar {
+        display: none; /* Hide right sidebar on tablets */
     }
     
     .features-grid {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 40px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
     }
 }
 
-@media (max-width: 1024px) {
-    .wy-nav-content-wrap {
-        margin-left: 300px; /* Keep sidebar */
+/* Mobile devices (767px and below) */
+@media (max-width: 767px) {
+    .wy-nav-side {
+        width: 85%;
+        height: 100%;
+        position: fixed;
+        left: -85%;
+        transition: left 0.3s ease;
+        z-index: 400;
     }
     
-    .wy-nav-content {
-        padding: 1.618em 2em;
+    .wy-nav-side.shift {
+        left: 0;
     }
-}
-
-@media (max-width: 768px) {
-    /* Mobile: sidebar becomes overlay, content uses full width */
+    
     .wy-nav-content-wrap {
-        margin-left: 0;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+    }
+    
+    .right-sidebar {
+        display: none; /* Hide right sidebar on mobile */
     }
     
     .wy-nav-content {
@@ -231,37 +406,142 @@ h1, h2, h3, h4, h5, h6 {
     
     .features-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
+        gap: 12px;
         margin: 16px 0;
-        padding: 0 8px;
     }
     
     .feature-box {
-        padding: 20px;
+        padding: 16px;
     }
     
-    .api-section {
-        padding: 20px;
+    /* Mobile menu button styling */
+    .wy-nav-top {
+        display: block !important;
+        background: #2980b9;
+        color: white;
+        padding: 0.4045em 0.809em;
+        position: relative;
+        line-height: 50px;
+        text-align: center;
+        font-size: 100%;
+    }
+    
+    .wy-nav-top a {
+        color: white;
+        font-weight: bold;
+    }
+    
+    .wy-nav-top i {
+        font-size: 1.5em;
     }
 }
 
-/* Override any theme max-width restrictions */
-.rst-content {
-    max-width: none !important;
+/* Small mobile devices (480px and below) */
+@media (max-width: 480px) {
+    .wy-nav-content {
+        padding: 1em 0.5em;
+    }
+    
+    .feature-box {
+        padding: 12px;
+    }
+    
+    .feature-box h3 {
+        font-size: 1em;
+    }
+    
+    .feature-box p {
+        font-size: 13px;
+    }
 }
 
-.document .body {
-    max-width: none !important;
+/* ====== ACCESSIBILITY AND INTERACTION ENHANCEMENTS ====== */
+
+/* Focus styles */
+.wy-menu-vertical a:focus,
+.right-sidebar .local-toc a:focus {
+    outline: 2px solid #2980b9;
+    outline-offset: 2px;
 }
 
-/* Ensure images and media scale properly in wider content */
-img {
-    max-width: 100%;
-    height: auto;
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
 }
 
-.figure {
-    max-width: none;
-    text-align: center;
-    margin: 1.5em 0;
+/* Print styles */
+@media print {
+    .wy-nav-side,
+    .right-sidebar {
+        display: none !important;
+    }
+    
+    .wy-nav-content-wrap {
+        margin: 0 !important;
+        width: 100% !important;
+    }
+}
+
+/* Dark mode support (if enabled) */
+@media (prefers-color-scheme: dark) {
+    .right-sidebar {
+        background: #2c3e50;
+        border-color: #34495e;
+    }
+    
+    .right-sidebar h3 {
+        color: #ecf0f1;
+        border-color: #34495e;
+    }
+    
+    .right-sidebar .local-toc a {
+        color: #bdc3c7;
+    }
+    
+    .right-sidebar .local-toc a:hover,
+    .right-sidebar .local-toc a.current {
+        color: #3498db;
+    }
+    
+    .feature-box {
+        background: #34495e;
+        border-color: #2c3e50;
+        color: #ecf0f1;
+    }
+    
+    .feature-box h3 {
+        color: #ecf0f1;
+    }
+    
+    .feature-box p {
+        color: #bdc3c7;
+    }
+}
+
+/* Loading and transition enhancements */
+.wy-nav-side,
+.right-sidebar {
+    transition: all 0.3s ease;
+}
+
+/* Scrollbar styling for webkit browsers */
+.wy-nav-side::-webkit-scrollbar,
+.right-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.wy-nav-side::-webkit-scrollbar-track,
+.right-sidebar::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+}
+
+.wy-nav-side::-webkit-scrollbar-thumb,
+.right-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.3);
+    border-radius: 3px;
+}
+
+.wy-nav-side::-webkit-scrollbar-thumb:hover,
+.right-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.5);
 }
