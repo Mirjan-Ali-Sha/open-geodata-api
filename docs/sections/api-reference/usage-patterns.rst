@@ -1,7 +1,6 @@
 Usage Patterns (API Testing)
 ============================
 
-
 The core classes provide STAC-compliant data models for working with satellite imagery metadata and assets.
 
 Install The Module
@@ -25,36 +24,35 @@ Define Clients
 
 .. code-block:: python
 
-    import open_geodata_api as ogapi
+   import open_geodata_api as ogapi
 
-    # Create client with auto-signing
-    pc = ogapi.planetary_computer(auto_sign=True)
+   # Create client with auto-signing
+   pc = ogapi.planetary_computer(auto_sign=True)
 
-    # Search for data
-    pc_results = pc.search(
-        collections=["sentinel-2-l2a"],
-        bbox=[-122.5, 47.5, -122.0, 48.0],
-        datetime="2024-01-01/2024-03-31"
-    )
+   # Search for data
+   pc_results = pc.search(
+       collections=["sentinel-2-l2a"],
+       bbox=[-122.5, 47.5, -122.0, 48.0],
+       datetime="2024-01-01/2024-03-31"
+   )
 
-    # Get ready-to-use URLs
-    pc_items = pc_results.get_all_items()
-    print(f"PC Items: {len(pc_items)}")
+   # Get ready-to-use URLs
+   pc_items = pc_results.get_all_items()
+   print(f"PC Items: {len(pc_items)}")
 
+   es = ogapi.earth_search()
 
-    es = ogapi.earth_search()
+   # Search for data
+   es_results = es.search(
+       collections=["sentinel-2-l2a"],
+       bbox=[-122.5, 47.5, -122.0, 48.0],
+       days=200,  # added to 0.2.9 version
+       limit=150
+   )
 
-    # Search for data
-    es_results = es.search(
-        collections=["sentinel-2-l2a"],
-        bbox=[-122.5, 47.5, -122.0, 48.0],
-        days= 200, #added to 0.2.9 version
-        limit=150
-    )
-
-    # Get ready-to-use URLs
-    es_items = es_results.get_all_items()
-    print(f"ES Items: {len(es_items)}")
+   # Get ready-to-use URLs
+   es_items = es_results.get_all_items()
+   print(f"ES Items: {len(es_items)}")
 
 Get Available Collections
 -------------------------
@@ -90,7 +88,8 @@ STACSearch API Reference
 
 .. code-block:: python
 
-    pc_results.items()
+   pc_results.items()
 
 .. code-block:: python
-    es_results.items()
+
+   es_results.items()
