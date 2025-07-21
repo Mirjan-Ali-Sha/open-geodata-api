@@ -84,8 +84,6 @@ Documentation Sections
 
    sections/examples/index
    sections/examples/basic-examples
-   sections/examples/integration-examples
-   sections/examples/real-world-examples
    sections/examples/real-world-examples
    sections/examples/integration-examples
    sections/examples/notebooks/index

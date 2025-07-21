@@ -1,5 +1,5 @@
-CLI Reference ("open-geodata-api=> 0.2.0")
-=========================================
+CLI Reference
+=============
 
 The Open Geodata API provides a comprehensive command-line interface (CLI) through the `ogapi` command, enabling users to interact with satellite data APIs easily from the terminal.
 
