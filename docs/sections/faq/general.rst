@@ -76,15 +76,18 @@ What are the costs involved?
 **A**: The software itself is free and open-source. However:
 
 **API Access Costs:**
+
 - **Planetary Computer**: Free tier available, may have usage limits
 - **EarthSearch**: Completely free and open access
 - **Data Transfer**: Standard cloud egress charges may apply for large downloads
 
 **Infrastructure Costs:**
+
 - You pay for your own compute/storage resources
 - No additional costs from our software
 
 **Best Practices for Cost Management:**
+
 - Use cloud cover filters to reduce unnecessary downloads
 - Download only required bands/assets
 - Use overview levels for previews
@@ -98,21 +101,25 @@ Do I need programming experience?
 **A**: **Basic Python knowledge** is recommended, but we provide tools for different skill levels:
 
 **Beginners:**
+
 - Comprehensive CLI for command-line usage
 - Copy-paste examples in documentation  
 - Step-by-step tutorials with explanations
 
 **Intermediate:**
+
 - Python API with clear documentation
 - Integration examples with popular libraries
 - Pre-built workflows for common tasks
 
 **Advanced:**
+
 - Full API customization and extension
 - Performance optimization techniques
 - Production deployment patterns
 
 **Learning Resources:**
+
 - Start with :doc:`../getting-started/index`
 - Follow :doc:`../examples/basic-workflows`
 - Use CLI commands: ``ogapi --help``
