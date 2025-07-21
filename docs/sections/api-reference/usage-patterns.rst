@@ -12,7 +12,7 @@ Install The Module
    pip install open-geodata-api['complete']
 
 Initialize Module
-------------------
+-----------------
 
 .. code-block:: python
 
