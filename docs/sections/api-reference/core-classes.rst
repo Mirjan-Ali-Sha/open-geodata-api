@@ -78,7 +78,7 @@ Collection of STAC items with bulk operations and data conversion capabilities.
 STACAsset
 ---------
 
-.. autoclass:: open_geodata_api.core.items.STACAsset
+.. autoclass:: open_geodata_api.core.assets.STACAsset
    :members:
    :undoc-members:
    :show-inheritance:

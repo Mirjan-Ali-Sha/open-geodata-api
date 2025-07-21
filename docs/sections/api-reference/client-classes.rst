@@ -6,7 +6,7 @@ Client classes provide access to different satellite data APIs with a unified in
 BaseAPIClient
 -------------
 
-.. autoclass:: open_geodata_api.clients.base.BaseAPIClient
+.. autoclass:: open_geodata_api.core.base_client.BaseSTACClient
    :members:
    :undoc-members:
    :show-inheritance:
@@ -22,7 +22,7 @@ Abstract base class for all API clients defining the common interface.
 PlanetaryComputerCollections
 ----------------------------
 
-.. autoclass:: open_geodata_api.clients.planetary_computer.PlanetaryComputerCollections
+.. autoclass:: open_geodata_api.planetary.client.PlanetaryComputerCollections
    :members:
    :undoc-members:
    :show-inheritance:
@@ -89,7 +89,7 @@ Requires the ``planetary-computer`` package for URL signing:
 EarthSearchCollections
 ----------------------
 
-.. autoclass:: open_geodata_api.clients.earth_search.EarthSearchCollections
+.. autoclass:: open_geodata_api.earthsearch.client.EarthSearchCollections
    :members:
    :undoc-members:
    :show-inheritance:

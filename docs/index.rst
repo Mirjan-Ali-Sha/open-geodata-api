@@ -83,11 +83,13 @@ Documentation Sections
    :caption: 💡 Examples & Tutorials
 
    sections/examples/index
-   sections/examples/basic-workflows
-   sections/examples/advanced-workflows
+   sections/examples/basic-examples
+   sections/examples/integration-examples
+   sections/examples/real-world-examples
    sections/examples/real-world-examples
    sections/examples/integration-examples
    sections/examples/notebooks/index
+   sections/examples/notebooks/sentinel2-analysis
 
 .. toctree::
    :maxdepth: 2
@@ -98,6 +100,8 @@ Documentation Sections
    sections/api-reference/client-classes
    sections/api-reference/utility-functions
    sections/api-reference/factory-functions
+   sections/api-reference/collections
+   sections/api-reference/usage-patterns
 
 .. toctree::
    :maxdepth: 2

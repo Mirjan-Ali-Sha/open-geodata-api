@@ -58,10 +58,15 @@ docs/
 """
 Sphinx configuration for Open Geodata API documentation
 """
-
+# ----------------------------------------------------------------
 import os
 import sys
+
+# Add the project root to Python path
 sys.path.insert(0, os.path.abspath('..'))
+# Add the source package specifically  
+sys.path.insert(0, os.path.abspath('../open_geodata_api'))
+
 
 # Project information
 project = 'Open Geodata API'
