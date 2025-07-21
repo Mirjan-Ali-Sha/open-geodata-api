@@ -86,8 +86,8 @@ Documentation Sections
    sections/examples/basic-examples
    sections/examples/real-world-examples
    sections/examples/integration-examples
-   sections/examples/notebooks/index
-   sections/examples/notebooks/sentinel2-analysis
+   .. sections/examples/notebooks/index
+   .. sections/examples/notebooks/sentinel2-analysis
 
 .. toctree::
    :maxdepth: 2
@@ -106,12 +106,12 @@ Documentation Sections
    :caption: 🖥️ CLI Reference
 
    sections/cli-reference/index
-   sections/cli-reference/collections
-   sections/cli-reference/search
-   sections/cli-reference/items
-   sections/cli-reference/download
-   sections/cli-reference/utils
-   sections/cli-reference/workflows
+   .. sections/cli-reference/collections
+   .. sections/cli-reference/search
+   .. sections/cli-reference/items
+   .. sections/cli-reference/download
+   .. sections/cli-reference/utils
+   .. sections/cli-reference/workflows
 
 .. toctree::
    :maxdepth: 2
