@@ -28,6 +28,8 @@ open_geodata_api/utils/__pycache__/
 pip-log.txt
 pip-delete-this-directory.txt
 Test_Open_GeoData_API_References.ipynb_checkpoints/
+index.rst.bak
+*.bak
 
 # Unit test / coverage reports
 htmlcov/
