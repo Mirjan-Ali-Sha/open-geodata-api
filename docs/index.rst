@@ -87,6 +87,8 @@ Documentation Sections
    sections/getting-started/quickstart
    sections/getting-started/configuration
    sections/getting-started/first-steps
+   sections/getting-started/catalog-quickstart
+   sections/getting-started/catalog-authentication
 
 .. toctree::
    :maxdepth: 2
@@ -95,6 +97,7 @@ Documentation Sections
    sections/examples/index
    sections/examples/real-world-examples
    sections/examples/integration-examples
+   sections/examples/catalog-examples
 
 .. toctree::
    :maxdepth: 2
@@ -107,6 +110,7 @@ Documentation Sections
    sections/api-reference/factory-functions
    sections/api-reference/collections
    sections/api-reference/usage-patterns
+   sections/api-reference/catalog-client
 
 .. toctree::
    :maxdepth: 2
@@ -125,6 +129,7 @@ Documentation Sections
    sections/faq/usage
    sections/faq/troubleshooting
    sections/faq/performance
+   sections/faq/catalog-faq
 
 .. toctree::
    :maxdepth: 2
