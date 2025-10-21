@@ -91,7 +91,7 @@ Usage Patterns
 Downloadable Notebook of API References Testing:
 ------------------------------------------------
 
-You can download the full Jupyter notebook of API examples here:
+You can download the full Jupyter notebook of API examples here;
 
 - `Download Test Open GeoData API References.ipynb <https://github.com/Mirjan-Ali-Sha/open-geodata-api/raw/main/Test_Open_GeoData_API_References.ipynb>`_
 

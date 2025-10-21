@@ -3,7 +3,7 @@ Open Geodata API: Unified Python client for open geospatial data APIs
 Supports Microsoft Planetary Computer, AWS EarthSearch, and more
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __author__ = "Mirjan Ali Sha"
 __email__ = "mastools.help@gmail.com"
 
@@ -23,6 +23,32 @@ from .earthsearch.validation import validate_url, validate_item, validate_asset_
 
 # Basic utilities
 from .utils.filters import filter_by_cloud_cover
+
+# In open_geodata_api/__init__.py
+
+from .unified.client import create_unified_client
+
+def unified_stac(api_url: str, **kwargs):
+    """
+    Create a unified STAC client for any STAC API endpoint.
+    
+    Parameters
+    ----------
+    api_url : str
+        STAC API endpoint URL
+        Examples:
+        - "https://geoservice.dlr.de/eoc/ogc/stac/v1/"
+        - "https://earthengine.openeo.org/v1.0/"
+    **kwargs
+        Additional client parameters
+        
+    Returns
+    -------
+    UnifiedSTACClient
+        Configured client instance
+    """
+    return create_unified_client(api_url, **kwargs)
+
 
 # Factory functions
 def planetary_computer(auto_sign: bool = False, verbose: bool = False):

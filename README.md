@@ -1716,6 +1716,49 @@ export OGAPI_DEFAULT_PROVIDER=pc
 export OGAPI_DEFAULT_DEST=./satellite_data/
 ```
 
+## 🌐 Universal Catalog Support (NEW!)
+
+Connect to **any** STAC-compliant API with the Universal Catalog Client:
+
+import open_geodata_api as ogapi
+
+### Public APIs (no authentication)
+client = ogapi.catalog("https://earth-search.aws.element84.com/v1")
+
+Private APIs (with authentication)
+client = ogapi.catalog(
+"https://your-stac-api.com",
+auth_token="your-token-here"
+)
+
+### Same interface for all STAC APIs!
+results = client.search(
+collections=["collection-name"],
+bbox=[-122, 47, -121, 48],
+datetime="2024-01-01/2024-12-31"
+)
+
+
+### Supported STAC APIs
+
+- ✅ AWS Element84 Earth Search
+- ✅ DLR EOC STAC Catalog  
+- ✅ OpenEO Earth Engine
+- ✅ Copernicus Data Space
+- ✅ **Any STAC v1.0+ compliant API**
+
+### Features
+
+- **Flexible Authentication**: Works with or without auth tokens
+- **Automatic Discovery**: Finds search endpoints and capabilities
+- **Band Name Mapping**: Handles different naming conventions (B02/blue/green)
+- **Consistent Interface**: Same methods as existing clients
+- **Error Handling**: Graceful handling of connection and auth failures
+
+📖 **[Read the Universal Catalog Documentation →](docs/sections/examples/catalog-examples.rst)**
+
+
+
 ## FAQ
 
 ### General Questions
