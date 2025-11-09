@@ -3,11 +3,10 @@ Validation utilities for Unified STAC Client
 """
 
 import requests
-from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
 
-def validate_stac_endpoint(endpoint_url: str, session: requests.Session = None) -> bool:
+def validate_stac_endpoint(endpoint_url, session=None):
     """
     Validate that an endpoint is a valid STAC API.
     
@@ -35,33 +34,25 @@ def validate_stac_endpoint(endpoint_url: str, session: requests.Session = None) 
         # Parse URL
         parsed_url = urlparse(endpoint_url)
         if not parsed_url.scheme or not parsed_url.netloc:
-            raise ValueError(f"Invalid URL format: {endpoint_url}")
+            raise ValueError("Invalid URL format: {}".format(endpoint_url))
         
-        # Try to get root catalog
+        # Try to access endpoint
         response = session.get(endpoint_url, timeout=10)
         response.raise_for_status()
         
-        catalog = response.json()
-        
-        # Check for STAC-specific fields
-        required_fields = ['type', 'links']
-        for field in required_fields:
-            if field not in catalog:
-                raise ValueError(f"Missing required STAC field: {field}")
-        
-        # Check type
-        if catalog.get('type') not in ['Catalog', 'Collection']:
-            raise ValueError(f"Invalid STAC type: {catalog.get('type')}")
+        # Basic validation - should return JSON
+        try:
+            response.json()
+        except ValueError:
+            raise ValueError("Endpoint does not return valid JSON")
         
         return True
         
     except requests.RequestException as e:
-        raise ValueError(f"Failed to connect to endpoint: {e}")
-    except (ValueError, KeyError) as e:
-        raise ValueError(f"Invalid STAC endpoint: {e}")
+        raise ValueError("Failed to connect to endpoint: {}".format(e))
 
 
-def validate_search_params(params: Dict) -> bool:
+def validate_search_params(params):
     """
     Validate search parameters.
     
@@ -108,13 +99,37 @@ def validate_search_params(params: Dict) -> bool:
         if not isinstance(limit, int) or limit <= 0:
             raise ValueError("limit must be a positive integer")
         
-        if limit > 10000:  # Reasonable upper limit
+        if limit > 10000:
             raise ValueError("limit too large (max 10000)")
     
     return True
 
 
-def validate_datetime_format(datetime_str: str) -> bool:
+def validate_auth_token(token):
+    """
+    Basic validation for authentication token.
+    
+    Parameters
+    ----------
+    token : str
+        Authentication token
+        
+    Returns
+    -------
+    bool
+        True if token appears valid
+    """
+    if not token or not isinstance(token, str):
+        return False
+        
+    # Basic checks
+    if len(token.strip()) < 10:
+        return False
+        
+    return True
+
+
+def validate_datetime_format(datetime_str):
     """
     Validate datetime string format.
     
@@ -132,10 +147,10 @@ def validate_datetime_format(datetime_str: str) -> bool:
     
     # RFC3339 datetime patterns
     patterns = [
-        r'^\d{4}-\d{2}-\d{2}$',  # YYYY-MM-DD
-        r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?$',  # YYYY-MM-DDTHH:MM:SSZ
-        r'^\d{4}-\d{2}-\d{2}/\d{4}-\d{2}-\d{2}$',  # YYYY-MM-DD/YYYY-MM-DD
-        r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?$'  # Full range
+        r'^\d{4}-\d{2}-\d{2}$',
+        r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?$',
+        r'^\d{4}-\d{2}-\d{2}/\d{4}-\d{2}-\d{2}$',
+        r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?$'
     ]
     
     for pattern in patterns:

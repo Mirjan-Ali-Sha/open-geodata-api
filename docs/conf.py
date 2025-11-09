@@ -88,8 +88,8 @@ try:
     version = open_geodata_api.__version__
     release = version
 except ImportError:
-    version = '0.1.0'
-    release = '0.1.0'
+    version = '0.4.2'
+    release = '0.4.2'
 
 # Sphinx extensions
 extensions = [

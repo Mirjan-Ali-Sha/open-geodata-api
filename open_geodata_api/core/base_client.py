@@ -70,6 +70,60 @@ class BaseSTACClient(ABC):
 
         return self._collection_details[collection_name]
 
+    def collections_title(self):
+        """
+        Get dictionary of collection IDs mapped to their titles.
+        
+        Returns
+        -------
+        dict
+            Dictionary with collection IDs as keys and titles as values
+        """
+        collections_dict = {}
+        collection_ids = self.list_collections()
+        
+        for coll_id in collection_ids:
+            try:
+                coll_info = self.get_collection_info(coll_id)
+                if coll_info:
+                    title = coll_info.get('title', 'No title')
+                    collections_dict[coll_id] = title
+                else:
+                    collections_dict[coll_id] = 'No title'
+            except Exception as e:
+                if self.verbose:
+                    print("Warning: Failed to get title for collection {}: {}".format(coll_id, e))
+                collections_dict[coll_id] = 'Error fetching title'
+        
+        return collections_dict
+
+
+    def available_collections(self):
+        """
+        Get the full JSON response from the collections endpoint without modifications.
+        
+        Returns
+        -------
+        dict
+            Complete JSON response from collections endpoint
+        """
+        url = "{}/collections".format(self.base_url)
+        
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            return response.json()
+            
+        except requests.RequestException as e:
+            if self.verbose:
+                print("Error fetching full collections response: {}".format(e))
+            
+            return {
+                'collections': [],
+                'links': [],
+                'error': str(e)
+            }
+
     def _format_datetime_rfc3339(self, datetime_input: Union[str, datetime]) -> str:
         """Convert datetime to RFC3339 format."""
         if not datetime_input:
@@ -270,3 +324,4 @@ class BaseSTACClient(ABC):
 
     def __repr__(self):
         return f"{self.__class__.__name__}({len(self.collections)} collections, provider='{self.provider_name}')"
+    

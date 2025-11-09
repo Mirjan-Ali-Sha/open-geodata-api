@@ -2,11 +2,11 @@
 Unified STAC Client for Open Geodata API
 ========================================
 
-A generic client for connecting to any STAC API endpoint.
-Supports custom STAC APIs like DLR EOC, OpenEO, and others.
+A flexible client for connecting to any STAC-compliant API endpoint
+with optional authentication.
 """
 
-from .client import UnifiedSTACClient
+from .client import UnifiedSTACClient, create_unified_client
 
 __version__ = "0.1.0"
-__all__ = ["UnifiedSTACClient"]
+__all__ = ["UnifiedSTACClient", "create_unified_client"]
